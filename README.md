@@ -1,4 +1,8 @@
 # shop
+This is a shop admin。
+
+# Technology stack
+vue，axios，vuex, ssr, node, koa
 
 ## Build Setup
 
