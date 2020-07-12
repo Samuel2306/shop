@@ -79,7 +79,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 async function start() {
-  console.log("11111111111111111111111111");
   const app = new __WEBPACK_IMPORTED_MODULE_0_koa___default.a();
   const host = process.env.HOST || '127.0.0.1';
   const port = process.env.PORT || 3000;

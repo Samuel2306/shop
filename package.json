@@ -1,6 +1,6 @@
 {
-  "name": "shop1",
-  "version": "1.1.0",
+  "name": "shop",
+  "version": "1.0.0",
   "description": "Nuxt.js project",
   "author": "feng.shen <feng.shen@nio.com>",
   "private": true,
@@ -14,7 +14,7 @@
   "dependencies": {
     "cross-env": "^5.0.1",
     "koa": "^2.4.1",
-    "nuxt": "latest",
+    "nuxt": "^2.0.0",
     "source-map-support": "^0.4.15"
   },
   "devDependencies": {
