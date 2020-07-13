@@ -10,6 +10,28 @@
   </section>
 </template>
 
+<script>
+  import axios from'axios'
+  export default {
+    asyncData({ req }) {
+      return {
+        name: req ? 'server' : 'client'
+      }
+    },
+    head() {
+      return {
+        title: `About Page (${this.name}-side)`
+      }
+    },
+    mounted(){
+      axios.get('/aaa',{})
+        .then((res) => {
+          console.log(res)
+        })
+    }
+  }
+</script>
+
 <style scoped>
 .title
 {

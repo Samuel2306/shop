@@ -1,4 +1,5 @@
 import Koa from 'koa'
+import routers from './interface'
 import { Nuxt, Builder } from 'nuxt'
 
 async function start () {
@@ -18,7 +19,12 @@ async function start () {
     const builder = new Builder(nuxt)
     await builder.build()
   }
-
+  /* 将所有接口引入 */
+  for (let prop in routers){
+    let router = routers[prop]
+    app.use(router.routes())
+    app.use(router.allowedMethods())
+  }
   app.use(ctx => {
     ctx.status = 200
     ctx.respond = false // Mark request as handled for Koa

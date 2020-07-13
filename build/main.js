@@ -73,8 +73,10 @@ module.exports =
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_koa__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_nuxt__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_nuxt___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_nuxt__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__interface__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_nuxt__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_nuxt___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_nuxt__);
+
 
 
 
@@ -84,18 +86,23 @@ async function start() {
   const port = process.env.PORT || 3000;
 
   // Import and Set Nuxt.js options
-  const config = __webpack_require__(3);
+  const config = __webpack_require__(5);
   config.dev = !(app.env === 'production');
 
   // Instantiate nuxt.js
-  const nuxt = new __WEBPACK_IMPORTED_MODULE_1_nuxt__["Nuxt"](config);
+  const nuxt = new __WEBPACK_IMPORTED_MODULE_2_nuxt__["Nuxt"](config);
 
   // Build in development
   if (config.dev) {
-    const builder = new __WEBPACK_IMPORTED_MODULE_1_nuxt__["Builder"](nuxt);
+    const builder = new __WEBPACK_IMPORTED_MODULE_2_nuxt__["Builder"](nuxt);
     await builder.build();
   }
-
+  /* 将所有接口引入 */
+  for (let prop in __WEBPACK_IMPORTED_MODULE_1__interface__["a" /* default */]) {
+    let router = __WEBPACK_IMPORTED_MODULE_1__interface__["a" /* default */][prop];
+    app.use(router.routes());
+    app.use(router.allowedMethods());
+  }
   app.use(ctx => {
     ctx.status = 200;
     ctx.respond = false; // Mark request as handled for Koa
@@ -117,12 +124,31 @@ module.exports = require("koa");
 
 /***/ }),
 /* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__user__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__user___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__user__);
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+  user: __WEBPACK_IMPORTED_MODULE_0__user___default.a
+});
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+module.exports = require("koa-router");
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports) {
 
 module.exports = require("nuxt");
 
 /***/ }),
-/* 3 */
+/* 5 */
 /***/ (function(module, exports) {
 
 module.exports = {
@@ -161,6 +187,20 @@ module.exports = {
     }
   }
 };
+
+/***/ }),
+/* 6 */,
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+let router = __webpack_require__(3)();
+// 设置模块名为接口前缀
+router.prefix('/api/v1/user');
+router.get('/aaa', async ctx => {
+  ctx.body = "首页";
+});
+
+module.exports = router;
 
 /***/ })
 /******/ ]);
