@@ -1,4 +1,6 @@
 import Koa from 'koa'
+const koaBody = require('koa-body')
+const path = require('path')
 import routers from './interface'
 import { Nuxt, Builder } from 'nuxt'
 
@@ -19,6 +21,21 @@ async function start () {
     const builder = new Builder(nuxt)
     await builder.build()
   }
+
+  // body parser 中间件
+  app.use(koaBody({
+    // 支持文件格式
+    multipart: true,
+    encoding:'uft-8',
+    formidable: {
+      // 上传目录
+      uploadDir:path.join(__dirname,'upload'),
+      // 保留文件扩展名
+      keepExtensions: true,
+    }
+  }));
+
+
   /* 将所有接口引入 */
   for (let prop in routers){
     let router = routers[prop]
