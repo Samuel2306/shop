@@ -1,4 +1,5 @@
 import Koa from 'koa'
+import connect from './connect'
 const koaBody = require('koa-body')
 const path = require('path')
 import routers from './interface'
@@ -53,4 +54,12 @@ async function start () {
   console.log('Server listening on ' + host + ':' + port) // eslint-disable-line no-console
 }
 
-start()
+connect()
+  .then((res) => {
+    console.log(res)
+    start()
+  })
+  .catch((error) => {
+    console.log(error)
+  })
+

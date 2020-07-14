@@ -8,6 +8,20 @@ import xlsx2json from "node-xlsx";
 import iconv_lite from'iconv-lite';
 
 
+let tbAttrNames = [
+  'orderNo',  // "订单编号"
+  'title', // "标题"
+  'price', // "价格"
+  'orderNum', // "购买数量"
+  'externalSysNum', // "外部系统编号"
+  'productAttrs',  // "商品属性"
+  'packageInfo', // "套餐信息"
+  'remark', // "备注"
+  'orderStatus', // "订单状态"
+  'productCode', // "商家编码"
+  'createTime', // "创建时间"
+]
+
 function delDir(path, callback){
   let files = [];
   if(fs.existsSync(path)){
@@ -74,9 +88,24 @@ router.post('/upload', ctx => {
           console.log(e)
         }
       }
-
     }
   }
+
+  orders = orders.slice(1).map((item) => {
+    let obj = {}
+    item.forEach((attr, idx) => {
+      if(tbAttrNames[idx] != 'createTime'){
+        obj[tbAttrNames[idx]] = attr
+      }else {
+        if(!attr || attr == 'null'){
+          obj[tbAttrNames[idx]] = new Date()
+        }else{
+          obj[tbAttrNames[idx]] = new Date(attr)
+        }
+      }
+    })
+    return obj
+  })
 
   let uploadDir = path.join(__dirname,'../../upload')
   delDir(uploadDir)
