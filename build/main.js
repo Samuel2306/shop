@@ -86,12 +86,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* WEBPACK VAR INJECTION */(function(__dirname) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_koa__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__connect__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__interface__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_nuxt__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__interface__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_nuxt__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_nuxt___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_nuxt__);
 
 
-const koaBody = __webpack_require__(6);
+const koaBody = __webpack_require__(7);
 const path = __webpack_require__(1);
 
 
@@ -102,7 +102,7 @@ async function start() {
   const port = process.env.PORT || 3000;
 
   // Import and Set Nuxt.js options
-  const config = __webpack_require__(17);
+  const config = __webpack_require__(18);
   config.dev = !(app.env === 'production');
 
   // Instantiate nuxt.js
@@ -165,13 +165,16 @@ module.exports = require("koa");
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config_envConfig__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config_envConfig___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__config_envConfig__);
 
 
-let url = 'mongodb://localhost:27017/shop';
+
+let url = __WEBPACK_IMPORTED_MODULE_1__config_envConfig___default.a.envName == 'test' ? __WEBPACK_IMPORTED_MODULE_1__config_envConfig___default.a.db.testUrl : __WEBPACK_IMPORTED_MODULE_1__config_envConfig___default.a.db.prodUrl;
 let options = {
   server: { poolSize: 5 },
-  user: "Samuel2306",
-  pass: "Samuel2306",
+  user: __WEBPACK_IMPORTED_MODULE_1__config_envConfig___default.a.db.userName,
+  pass: __WEBPACK_IMPORTED_MODULE_1__config_envConfig___default.a.db.password,
   useNewUrlParser: true,
   useUnifiedTopology: true,
   authSource: 'admin' // 用户验证到admin数据库去验证
@@ -193,17 +196,23 @@ module.exports = require("mongoose");
 /* 6 */
 /***/ (function(module, exports) {
 
-module.exports = require("koa-body");
+module.exports = {"envName":"test","db":{"testUrl":"mongodb://localhost:27017/shop","userName":"samuel2306","password":"123456","prodUrl":""}}
 
 /***/ }),
 /* 7 */
+/***/ (function(module, exports) {
+
+module.exports = require("koa-body");
+
+/***/ }),
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__user__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__product__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__order__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__stock__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__user__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__product__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__order__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__stock__ = __webpack_require__(16);
 
 
 
@@ -217,7 +226,7 @@ module.exports = require("koa-body");
 });
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -231,7 +240,7 @@ router.get('/aaa', async ctx => {
 /* harmony default export */ __webpack_exports__["a"] = (router);
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -245,16 +254,16 @@ router.get('/aaa', async ctx => {
 /* harmony default export */ __webpack_exports__["a"] = (router);
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(__dirname) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_fs__ = __webpack_require__(12);
+/* WEBPACK VAR INJECTION */(function(__dirname) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_fs__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_fs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_fs__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_node_xlsx__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_node_xlsx__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_node_xlsx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_node_xlsx__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_iconv_lite__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_iconv_lite__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_iconv_lite___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_iconv_lite__);
 
 
@@ -366,7 +375,7 @@ router.post('/upload', ctx => {
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, "server/interface/order"))
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -395,25 +404,25 @@ const checkCSVType = file => {
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports) {
 
 module.exports = require("node-xlsx");
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports) {
 
 module.exports = require("iconv-lite");
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -427,13 +436,13 @@ router.get('/aaa', async ctx => {
 /* harmony default export */ __webpack_exports__["a"] = (router);
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports) {
 
 module.exports = require("nuxt");
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports) {
 
 module.exports = {

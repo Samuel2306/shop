@@ -1,0 +1,9 @@
+{
+  "envName": "test",
+  "db": {
+    "testUrl": "mongodb://localhost:27017/shop",
+    "userName": "samuel2306",
+    "password": "123456",
+    "prodUrl": ""
+  }
+}

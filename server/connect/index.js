@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
+import envConfig from '../config/envConfig'
 
-let url = 'mongodb://localhost:27017/shop';
+let url = envConfig.envName == 'test' ? envConfig.db.testUrl : envConfig.db.prodUrl
 let options = {
   server: { poolSize: 5 },
-  user: "Samuel2306",
-  pass: "Samuel2306",
+  user: envConfig.db.userName,
+  pass: envConfig.db.password,
   useNewUrlParser: true,
   useUnifiedTopology: true,
   authSource: 'admin',  // 用户验证到admin数据库去验证
