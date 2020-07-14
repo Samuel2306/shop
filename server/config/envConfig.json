@@ -4,6 +4,7 @@
     "testUrl": "mongodb://localhost:27017/shop",
     "userName": "samuel2306",
     "password": "123456",
+    "poolSize": 5,
     "prodUrl": ""
   }
 }

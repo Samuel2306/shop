@@ -3,7 +3,9 @@ import envConfig from '../config/envConfig'
 
 let url = envConfig.envName == 'test' ? envConfig.db.testUrl : envConfig.db.prodUrl
 let options = {
-  server: { poolSize: 5 },
+  server: {
+    poolSize: envConfig.db.poolSize
+  },
   user: envConfig.db.userName,
   pass: envConfig.db.password,
   useNewUrlParser: true,
