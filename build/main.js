@@ -383,8 +383,8 @@ router.post('/upload', async ctx => {
       let val = item[idx];
       if (attr != 'createDate') {
         if (val) {
-          val = Object(__WEBPACK_IMPORTED_MODULE_6__util__["b" /* replaceAll */])(val, '=\"', "");
-          obj[attr] = Object(__WEBPACK_IMPORTED_MODULE_6__util__["b" /* replaceAll */])(val, '\"', "");
+          val = Object(__WEBPACK_IMPORTED_MODULE_6__util__["c" /* replaceAll */])(val, '=\"', "");
+          obj[attr] = Object(__WEBPACK_IMPORTED_MODULE_6__util__["c" /* replaceAll */])(val, '\"', "");
         } else {
           obj[attr] = val;
         }
@@ -420,8 +420,8 @@ router.post('/upload', async ctx => {
       return;
     });
   }).then(() => {
-    ctx.body = orders;
-    // ctx.body = new SuccessResult("插入数据成功")
+    // ctx.body = orders
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["b" /* SuccessResult */]("插入数据成功");
   }).catch(err => {
     ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */](err ? err : "插入数据成功");
   });
@@ -516,8 +516,8 @@ let importOrdersSchema = new Schema({
     index: true // 建立索引
   }, // "订单编号"
   'title': String, // "标题"
-  'price': String, // "价格"
-  'orderNum': String, // "购买数量"
+  'price': Number, // "价格"
+  'orderNum': Number, // "购买数量"
   'externalSysNum': String, // "外部系统编号"
   'productAttrs': String, // "商品属性"
   'packageInfo': String, // "套餐信息"
@@ -535,10 +535,10 @@ let importOrdersSchema = new Schema({
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return replaceAll; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return replaceAll; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__result__ = __webpack_require__(20);
 /* unused harmony reexport Result */
-/* unused harmony reexport SuccessResult */
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_0__result__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_0__result__["a"]; });
 
 
@@ -560,7 +560,7 @@ const replaceAll = function (str, oldContent, newContent) {
 
 "use strict";
 /* unused harmony export Result */
-/* unused harmony export SuccessResult */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return SuccessResult; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ErrorResult; });
 class Result {
   constructor({ code, msg }) {

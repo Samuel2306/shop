@@ -7,8 +7,8 @@ let importOrdersSchema = new Schema({
     index: true, // 建立索引
   },  // "订单编号"
   'title':  String, // "标题"
-  'price':  String, // "价格"
-  'orderNum':  String, // "购买数量"
+  'price':  Number, // "价格"
+  'orderNum':  Number, // "购买数量"
   'externalSysNum':  String, // "外部系统编号"
   'productAttrs':  String,  // "商品属性"
   'packageInfo':  String, // "套餐信息"

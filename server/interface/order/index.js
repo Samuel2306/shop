@@ -165,8 +165,8 @@ router.post('/upload', async ctx => {
     })
   })
     .then(() => {
-      ctx.body = orders
-      // ctx.body = new SuccessResult("插入数据成功")
+      // ctx.body = orders
+      ctx.body = new SuccessResult("插入数据成功")
     })
     .catch((err) => {
       ctx.body = new ErrorResult(err ? err : "插入数据成功")
