@@ -69,17 +69,27 @@ router.prefix('/api/v1/order')
 
 // 上传文件
 router.post('/upload', async ctx => {
+  console.log(ctx.request.files)
+  let files = {}
   // koa-body会将文件保存在request的files属性中
-  let files = ctx.request.files
+  if(ctx.request.body.files){
+    files = {
+      files: ctx.request.body.files
+    }
+  }else{
+    files = ctx.request.files
+  }
   let platform = ctx.request.body.platform   // 'tb': 淘宝，'dy'：抖音
   let orderAttrs = platform == 'tb' ? tbAttrNames : dyAttrNames
   let createDate = ctx.request.body.createDate
 
+  console.log(files)
 
   if(!files || !files.files ){
     ctx.body = "请选择相应文件进行上传"
     return
   }
+
   // files是接口定义的用来代表上传文件的属性，上传单个文件时files.files是File类型，多个文件files.files是数组
   let res = Array.isArray(files.files) ? files.files : [files.files]
   let orders = []

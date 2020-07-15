@@ -16,7 +16,8 @@ module.exports = {
   /*
   ** Global CSS
   */
-  css: ['~assets/css/main.css'],
+  css: ['~assets/css/main.css','element-ui/lib/theme-chalk/index.css'],
+  plugins: ["@/plugins/element-ui"],
   /*
   ** Customize the progress-bar color
   */
