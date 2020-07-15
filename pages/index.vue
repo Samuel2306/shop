@@ -10,7 +10,7 @@
       multiple
       :limit="15"
       :http-request="uploadFileChange"
-
+      accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
       :show-file-list="true">
       <el-button size="small" type="primary">点击上传</el-button>
     </el-upload>
