@@ -7,6 +7,7 @@
     <el-upload
       class="upload-demo"
       action="https://localhost:3000/api/v1/order/upload"
+      multiple
       :limit="15"
       :http-request="uploadFileChange"
 
@@ -71,7 +72,7 @@
             })
         }, false);
 
-        reader.readAsDataURL(that.fileList);
+        reader.readAsDataURL(this.fileList);
       }
     },
     mounted(){

@@ -326,21 +326,15 @@ router.prefix('/api/v1/order');
 
 // 上传文件
 router.post('/upload', async ctx => {
-  console.log(ctx.request.files);
+  // console.log(ctx.request.files)
   let files = {};
   // koa-body会将文件保存在request的files属性中
-  if (ctx.request.body.files) {
-    files = {
-      files: ctx.request.body.files
-    };
-  } else {
-    files = ctx.request.files;
-  }
+  files = ctx.request.files;
   let platform = ctx.request.body.platform; // 'tb': 淘宝，'dy'：抖音
   let orderAttrs = platform == 'tb' ? tbAttrNames : dyAttrNames;
   let createDate = ctx.request.body.createDate;
 
-  console.log(files);
+  // console.log(files)
 
   if (!files || !files.files) {
     ctx.body = "请选择相应文件进行上传";
