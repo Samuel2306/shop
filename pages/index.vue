@@ -7,8 +7,6 @@
     <el-upload
       class="upload-demo"
       action="https://localhost:3000/api/v1/order/upload"
-      multiple
-      :limit="15"
       :http-request="uploadFileChange"
       accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
       :show-file-list="true">
@@ -76,10 +74,7 @@
       }
     },
     mounted(){
-      axios.get('/aaa',{})
-        .then((res) => {
-          console.log(res)
-        })
+
     }
   }
 </script>
