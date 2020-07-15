@@ -2,7 +2,10 @@ import mongoose from'mongoose'
 let Schema = mongoose.Schema;
 
 let importOrdersSchema = new Schema({
-  'orderNo':  String,  // "订单编号"
+  'orderNo': {
+    type: String,
+    index: true, // 建立索引
+  },  // "订单编号"
   'title':  String, // "标题"
   'price':  String, // "价格"
   'orderNum':  String, // "购买数量"
@@ -12,7 +15,8 @@ let importOrdersSchema = new Schema({
   'remark':  String, // "备注"
   'orderStatus':  String, // "订单状态"
   'productCode':  String, // "商家编码"
-  'createTime':  String, // "创建时间"
+  'createDate':  String, // "创建时间"
+  'platform':  String, // "所属平台"
 });
 
 

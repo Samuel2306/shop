@@ -4,7 +4,7 @@ import {
 } from './schema'
 
 
-let importOrdersModel = mongoose.model('tb.orders', importOrdersSchema);
+let importOrdersModel = mongoose.model('orders', importOrdersSchema);
 
 
 export {

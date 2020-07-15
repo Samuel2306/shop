@@ -4,6 +4,7 @@
     <h1 class="title">
       Universal Vue.js Application Framework
     </h1>
+    <button>发起文件上传</button>
     <nuxt-link class="button" to="/about">
       About page
     </nuxt-link>

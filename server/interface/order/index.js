@@ -3,9 +3,18 @@ import {
   checkCSVType,
 } from '../../../utils/utils'
 import fs from 'fs'
+import moment from 'moment'
 const path = require('path')
 import xlsx2json from "node-xlsx";
 import iconv_lite from'iconv-lite';
+import {
+  importOrdersModel
+} from '../../model/order/model'
+import {
+  SuccessResult,
+  ErrorResult,
+  replaceAll,
+} from '../../util'
 
 
 let tbAttrNames = [
@@ -19,7 +28,20 @@ let tbAttrNames = [
   'remark', // "备注"
   'orderStatus', // "订单状态"
   'productCode', // "商家编码"
-  'createTime', // "创建时间"
+  'createDate', // "创建时间"
+]
+let dyAttrNames = [
+  'orderNo',  // "订单编号"
+  'title', // "标题"
+  'price', // "价格"
+  'orderNum', // "购买数量"
+  'externalSysNum', // "外部系统编号"
+  'productAttrs',  // "商品属性"
+  'packageInfo', // "套餐信息"
+  'remark', // "备注"
+  'orderStatus', // "订单状态"
+  'productCode', // "商家编码"
+  'createDate', // "创建时间"
 ]
 
 function delDir(path, callback){
@@ -46,9 +68,14 @@ let router = require('koa-router')();
 router.prefix('/api/v1/order')
 
 // 上传文件
-router.post('/upload', ctx => {
+router.post('/upload', async ctx => {
   // koa-body会将文件保存在request的files属性中
   let files = ctx.request.files
+  let platform = ctx.request.body.platform   // 'tb': 淘宝，'dy'：抖音
+  let orderAttrs = platform == 'tb' ? tbAttrNames : dyAttrNames
+  let createDate = ctx.request.body.createDate
+
+
   if(!files || !files.files ){
     ctx.body = "请选择相应文件进行上传"
     return
@@ -79,9 +106,9 @@ router.post('/upload', ctx => {
         try {
           let fileData = fs.readFileSync(path)
           let res = iconv_lite.decode(fileData, charset)
-          res = res.split("\r\n")
+          res = res.split("\n")
           res.forEach((item,index) => {
-            res[index] = res[index].split(',')
+            res[index] = item.split(',')
           })
           orders = orders.concat(res)
         } catch (e) {
@@ -91,25 +118,59 @@ router.post('/upload', ctx => {
     }
   }
 
+  // 格式化订单数据
   orders = orders.slice(1).map((item) => {
-    let obj = {}
-    item.forEach((attr, idx) => {
-      if(tbAttrNames[idx] != 'createTime'){
-        obj[tbAttrNames[idx]] = attr
-      }else {
-        if(!attr || attr == 'null'){
-          obj[tbAttrNames[idx]] = new Date()
+    let obj = {
+      platform: platform
+    }
+    orderAttrs.forEach((attr, idx) => {
+      let val = item[idx]
+      if(attr != 'createDate'){
+        if(val){
+          val = replaceAll(val, '=\"', "")
+          obj[attr] = replaceAll(val, '\"', "")
         }else{
-          obj[tbAttrNames[idx]] = new Date(attr)
+          obj[attr] = val
+        }
+        /*if(attr == 'orderNo'){
+          obj[attr] = String(Number(val))
+        }*/
+      }else {
+        if(!val || val == 'null'){
+          obj[attr] = createDate ? moment(new Date(createDate)).format('YYYY-MM-DD HH:mm:ss') : moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        }else{
+          obj[attr] = moment(new Date(val)).format('YYYY-MM-DD HH:mm:ss')
         }
       }
     })
     return obj
   })
 
+  for (let i = orders.length - 1; i >= 0; i--) {
+    if(!orders[i].orderNo && !orders[i].price){
+      orders.splice(i, 1)
+    }
+  }
   let uploadDir = path.join(__dirname,'../../upload')
   delDir(uploadDir)
-  ctx.body = orders
+
+  await new Promise(function(resolve, reject){
+    importOrdersModel.create(orders, function (err, res) {
+      if (err) {
+        reject()
+      } else {
+        resolve(err)
+      }
+      return
+    })
+  })
+    .then(() => {
+      ctx.body = orders
+      // ctx.body = new SuccessResult("插入数据成功")
+    })
+    .catch((err) => {
+      ctx.body = new ErrorResult(err ? err : "插入数据成功")
+    })
 })
 
 export default router
