@@ -93,7 +93,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_koa__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__connect__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__interface__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_nuxt__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_nuxt__ = __webpack_require__(23);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_nuxt___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_nuxt__);
 
 
@@ -108,7 +108,7 @@ async function start() {
   const port = process.env.PORT || 3000;
 
   // Import and Set Nuxt.js options
-  const config = __webpack_require__(23);
+  const config = __webpack_require__(24);
   config.dev = !(app.env === 'production');
 
   // Instantiate nuxt.js
@@ -214,7 +214,7 @@ module.exports = require("koa-body");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__user__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__product__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__order__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__stock__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__stock__ = __webpack_require__(22);
 
 
 
@@ -280,6 +280,7 @@ const path = __webpack_require__(2);
 
 
 
+__WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].queue = new __WEBPACK_IMPORTED_MODULE_6__util__["b" /* Queue */](10);
 let tbAttrNames = ['orderNo', // "订单编号"
 'title', // "标题"
 'price', // "价格"
@@ -320,66 +321,36 @@ function delDir(path, callback) {
   callback && callback();
 }
 
-let router = __webpack_require__(0)();
-// 设置模块名为接口前缀
-router.prefix('/api/v1/order');
+function validateFile(currentFile, clearQueue) {
+  if (clearQueue == 1) {
+    // 1表示清除所有文件名的缓存
+    __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].queue.clear();
+  }
+  let fileName = currentFile.name;
+  /*根据文件名称避免重复上传*/
+  if (__WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].queue.isInQueue(fileName)) {
+    return {
+      body: new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]("该文件已上传，请勿重复上传"),
+      flag: false
+    };
+  }
+  /*根据文件名称避免重复上传*/
 
-// 上传文件
-router.post('/upload', async ctx => {
-  // console.log(ctx.request.files)
-  let files = {};
-  // koa-body会将文件保存在request的files属性中
-  files = ctx.request.files;
-  let platform = ctx.request.body.platform; // 'tb': 淘宝，'dy'：抖音
-  let orderAttrs = platform == 'tb' ? tbAttrNames : dyAttrNames;
-  let createDate = ctx.request.body.createDate;
-
-  // console.log(files)
-
-  if (!files || !files.files) {
-    ctx.body = "请选择相应文件进行上传";
-    return;
+  /*文件格式验证*/
+  if (!Object(__WEBPACK_IMPORTED_MODULE_0__utils_utils__["b" /* checkExcelType */])(currentFile) && !Object(__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* checkCSVType */])(currentFile)) {
+    return {
+      body: new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]("请上传正确格式的表格"),
+      flag: false
+    };
   }
 
-  // files是接口定义的用来代表上传文件的属性，上传单个文件时files.files是File类型，多个文件files.files是数组
-  let res = Array.isArray(files.files) ? files.files : [files.files];
-  let orders = [];
-  for (let i = 0; i < res.length; i++) {
-    let currentFile = res[i];
-    if (!Object(__WEBPACK_IMPORTED_MODULE_0__utils_utils__["b" /* checkExcelType */])(res[i]) && !Object(__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* checkCSVType */])(res[i])) {
-      ctx.body = "请上传正确格式的表格" + (res.length > 1 ? ",多文件上传时可能存在非表格文件" : "");
-      return;
-    } else {
-      let path = currentFile.path || '';
-      if (Object(__WEBPACK_IMPORTED_MODULE_0__utils_utils__["b" /* checkExcelType */])(res[i])) {
-        let excelData = __WEBPACK_IMPORTED_MODULE_3_node_xlsx___default.a.parse(path);
-        orders = orders.concat(excelData[0].data);
-      } else if (Object(__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* checkCSVType */])(res[i])) {
-        let buffer = __WEBPACK_IMPORTED_MODULE_1_fs___default.a.readFileSync(path);
-        let charset = '';
-        if (buffer[0] == 0xff && buffer[1] == 0xfe || buffer[0] == 0xfe && buffer[1] == 0xff) {
-          charset = 'unicode';
-        } else if (buffer[0] == 0xef && buffer[1] == 0xbb) {
-          charset = 'utf8';
-        } else {
-          charset = 'gbk';
-        }
-        try {
-          let fileData = __WEBPACK_IMPORTED_MODULE_1_fs___default.a.readFileSync(path);
-          let res = __WEBPACK_IMPORTED_MODULE_4_iconv_lite___default.a.decode(fileData, charset);
-          res = res.split("\n");
-          res.forEach((item, index) => {
-            res[index] = item.split(',');
-          });
-          orders = orders.concat(res);
-        } catch (e) {
-          console.log(e);
-        }
-      }
-    }
-  }
+  return {
+    flag: true
+  };
+}
 
-  // 格式化订单数据
+// 格式化订单数据
+function fileDataConvert(orders, orderAttrs, platform, createDate) {
   orders = orders.slice(1).map(item => {
     let obj = {
       platform: platform
@@ -388,8 +359,8 @@ router.post('/upload', async ctx => {
       let val = item[idx];
       if (attr != 'createDate') {
         if (val) {
-          val = Object(__WEBPACK_IMPORTED_MODULE_6__util__["c" /* replaceAll */])(val, '=\"', "");
-          obj[attr] = Object(__WEBPACK_IMPORTED_MODULE_6__util__["c" /* replaceAll */])(val, '\"', "");
+          val = Object(__WEBPACK_IMPORTED_MODULE_6__util__["d" /* replaceAll */])(val, '=\"', "");
+          obj[attr] = Object(__WEBPACK_IMPORTED_MODULE_6__util__["d" /* replaceAll */])(val, '\"', "");
         } else {
           obj[attr] = val;
         }
@@ -406,14 +377,169 @@ router.post('/upload', async ctx => {
     });
     return obj;
   });
-
   for (let i = orders.length - 1; i >= 0; i--) {
     if (!orders[i].orderNo && !orders[i].price) {
       orders.splice(i, 1);
     }
   }
+  return orders;
+}
+
+/*验证文件数据是否重复*/
+function validateData(data, nums, all) {
+  let flags = [];
+  let promiseList = [];
+  if (all) {
+    for (let i = 0; i < nums; i++) {
+      promiseList.push(new Promise(function (resolve, reject) {
+        __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].findOne({ "orderNo": data[i].orderNo }, function (err, order) {
+          if (err) {
+            console.log("查找出错");
+            resolve(true);
+          }
+          if (order) {
+            resolve(false);
+          } else {
+            resolve(true);
+          }
+
+          resolve();
+        });
+      }));
+    }
+  } else {
+    let indexs = [];
+    while (indexs.length < nums) {
+      let randomNum = Math.floor(Math.random() * data.length);
+      if (indexs.indexOf(randomNum) < 0) {
+        indexs.push(randomNum);
+      }
+    }
+    for (let j = 0; j < indexs.length; j++) {
+      let index = indexs[j];
+      promiseList.push(new Promise(function (resolve, reject) {
+        __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].findOne({ "orderNo": data[index].orderNo }, function (err, order) {
+          if (err) {
+            console.log("查找出错");
+            resolve(true);
+          }
+
+          if (order) {
+            resolve(false);
+          } else {
+            resolve(true);
+          }
+        });
+      }));
+    }
+
+    return Promise.all(promiseList, list => {
+      return list;
+    });
+  }
+}
+
+async function fileContentValidate(orders) {
+  /*对数据重复性进行验证,随机抽样一定的数据看，看是否是同一个文件*/
+  let contentFlag = true;
+  let list = [];
+  if (orders.length < 5) {
+    list = await validateData(orders, orders.length, true);
+  } else if (orders.length < 50) {
+    list = await validateData(orders, 5);
+  } else if (Math.ceil(orders.length / 10) < 10) {
+    list = await validateData(orders, Math.ceil(orders.length / 10));
+  } else {
+    list = await validateData(orders, 10);
+  }
+  contentFlag = list.every(item => {
+    return item;
+  });
+  return contentFlag;
+  /*对数据重复性进行验证*/
+}
+
+let router = __webpack_require__(0)();
+// 设置模块名为接口前缀
+router.prefix('/api/v1/order');
+
+// 上传文件
+router.post('/upload', async ctx => {
+  // koa-body会将文件保存在request的files属性中
+  let files = ctx.request.files;
+  let platform = ctx.request.body.platform; // 'tb': 淘宝，'dy'：抖音
+  let orderAttrs = platform == 'tb' ? tbAttrNames : dyAttrNames;
+  let createDate = ctx.request.body.createDate;
+  let clearQueue = ctx.request.body.clearQueue || false;
+
+  // console.log(files)
+
+  if (!files || !files.files) {
+    ctx.body = "请选择相应文件进行上传";
+    return;
+  }
+
+  // files是接口定义的用来代表上传文件的属性，上传单个文件时files.files是File类型，多个文件files.files是数组
+  let res = Array.isArray(files.files) ? files.files : [files.files];
+  let orders = [];
+  for (let i = 0; i < res.length; i++) {
+    let currentFile = res[i];
+
+    let valid = validateFile(currentFile, clearQueue);
+    if (!valid.flag) {
+      ctx.body = valid.body;
+      return;
+    }
+
+    let path = currentFile.path || '';
+    if (Object(__WEBPACK_IMPORTED_MODULE_0__utils_utils__["b" /* checkExcelType */])(res[i])) {
+      let excelData = __WEBPACK_IMPORTED_MODULE_3_node_xlsx___default.a.parse(path);
+      let dataList = fileDataConvert(excelData[0].data, orderAttrs, platform, createDate);
+      let flag = await fileContentValidate(dataList);
+      if (flag) {
+        __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].queue.add(currentFile.name);
+        orders = orders.concat(dataList);
+      } else {
+        ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]("请勿重复上传数据相同的文件");
+        return;
+      }
+    } else if (Object(__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* checkCSVType */])(res[i])) {
+      let buffer = __WEBPACK_IMPORTED_MODULE_1_fs___default.a.readFileSync(path);
+      let charset = '';
+      if (buffer[0] == 0xff && buffer[1] == 0xfe || buffer[0] == 0xfe && buffer[1] == 0xff) {
+        charset = 'unicode';
+      } else if (buffer[0] == 0xef && buffer[1] == 0xbb) {
+        charset = 'utf8';
+      } else {
+        charset = 'gbk';
+      }
+      try {
+        let fileData = __WEBPACK_IMPORTED_MODULE_1_fs___default.a.readFileSync(path);
+        let res = __WEBPACK_IMPORTED_MODULE_4_iconv_lite___default.a.decode(fileData, charset);
+        res = res.split("\n");
+        res.forEach((item, index) => {
+          res[index] = item.split(',');
+        });
+
+        let dataList = fileDataConvert(res, orderAttrs, platform, createDate);
+        let flag = await fileContentValidate(dataList);
+        if (flag) {
+          __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].queue.add(currentFile.name);
+          orders = orders.concat(dataList);
+        } else {
+          ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]("请勿重复上传文件");
+          return;
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  }
+
+  /*删除换存在服务器的文件*/
   let uploadDir = path.join(__dirname, '../../upload');
   delDir(uploadDir);
+  /*删除换存在服务器的文件*/
 
   await new Promise(function (resolve, reject) {
     __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].create(orders, function (err, res) {
@@ -426,9 +552,9 @@ router.post('/upload', async ctx => {
     });
   }).then(() => {
     // ctx.body = orders
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["b" /* SuccessResult */]("插入数据成功");
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]("插入数据成功");
   }).catch(err => {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */](err ? err : "插入数据成功");
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */](err ? err : "插入数据失败");
   });
 });
 
@@ -540,11 +666,14 @@ let importOrdersSchema = new Schema({
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return replaceAll; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return replaceAll; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__result__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tool__ = __webpack_require__(21);
 /* unused harmony reexport Result */
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_0__result__["b"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_0__result__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_0__result__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_1__tool__["a"]; });
+
 
 
 const replaceAll = function (str, oldContent, newContent) {
@@ -593,6 +722,43 @@ class ErrorResult extends Result {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Queue; });
+class Queue {
+  constructor(length, queue) {
+    this.maxLength = length;
+    this.queue = queue && Array.isArray(queue) ? queue : [];
+  }
+  add(elem) {
+    if (this.queue.length < this.maxLength) {
+      this.queue.push(elem);
+    } else {
+      this.queue.shift();
+      this.queue.push(elem);
+    }
+  }
+  removeByIndex(index) {
+    if (index > this.queue.length - 1) return;
+    this.queue.splice(index, 1);
+  }
+  removeByElem(elem) {
+    let index = this.queue.indexOf(elem);
+    if (index > -1) this.queue.splice(index, 1);
+  }
+  clear() {
+    this.queue = [];
+  }
+  isInQueue(elem) {
+    return this.queue.indexOf(elem) > -1;
+  }
+}
+
+
+
+/***/ }),
+/* 22 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 let router = __webpack_require__(0)();
 // 设置模块名为接口前缀
 router.prefix('/api/v1/stock');
@@ -603,13 +769,13 @@ router.get('/aaa', async ctx => {
 /* harmony default export */ __webpack_exports__["a"] = (router);
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports) {
 
 module.exports = require("nuxt");
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports) {
 
 module.exports = {

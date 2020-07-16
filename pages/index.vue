@@ -70,6 +70,17 @@
             })
         }, false);
 
+        reader.onprogress = function (event) {
+          console.log(event)
+          if(event.lengthComputable) {
+            console.log(event.loaded + '/' + event.total)
+          }
+        }
+        reader.addEventListener("error", function () {
+          console.log('Could not read file, error code is ' + reader.error.code)
+        })
+
+
         reader.readAsDataURL(this.fileList);
       }
     },

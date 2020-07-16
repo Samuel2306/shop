@@ -3,6 +3,9 @@ import {
   SuccessResult,
   ErrorResult,
 } from './result'
+import {
+  Queue,
+} from './tool'
 
 
 const replaceAll = function(str, oldContent, newContent){
@@ -21,5 +24,6 @@ export {
   Result,
   SuccessResult,
   ErrorResult,
+  Queue,
   replaceAll,
 }
