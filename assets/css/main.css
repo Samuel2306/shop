@@ -6,13 +6,13 @@ html, body
   font-family: "Source Sans Pro", Arial, sans-serif;
   height: 100vh;
   margin: 0;
+  padding: 0;
 }
 
 footer
 {
   padding: 20px;
   text-align: center;
-  border-top: 1px solid #ddd;
 }
 
 a, a:hover, a:focus, a:visited
@@ -32,4 +32,17 @@ a, a:hover, a:focus, a:visited
 .page-enter, .page-leave-active
 {
   opacity: 0
+}
+
+
+#__nuxt, #__layout, .el-container{
+  height: 100%;
+}
+.el-header{
+  padding: 0 !important;
+  height: 50px !important;
+  border-bottom: #ccc solid 1px !important;
+}
+.el-footer{
+  border-top: 1px solid #ddd !important;
 }

@@ -1,16 +1,32 @@
 <template>
-  <div>
-    <nuxt/>
-    <my-footer/>
-  </div>
+  <el-container>
+    <el-aside width="200px">
+      <Sidebar />
+    </el-aside>
+    <el-container>
+      <el-header>
+        <Header />
+      </el-header>
+      <el-main>
+        <nuxt/>
+      </el-main>
+      <el-footer>
+        <my-footer/>
+      </el-footer>
+    </el-container>
+  </el-container>
 </template>
 
 <script>
 import MyFooter from '../components/Footer.vue'
+import Sidebar from '../components/Sidebar.vue'
+import Header from '../components/Header.vue'
 
 export default {
   components: {
-    MyFooter
+    MyFooter,
+    Sidebar,
+    Header,
   }
 }
 </script>
