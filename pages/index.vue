@@ -1,43 +1,16 @@
 <template>
   <section class="container">
-    <el-table
-      :data="tableData"
-      style="width: 100%">
-      <el-table-column
-        label="日期"
-        width="180">
-        <template slot-scope="scope">
-          <i class="el-icon-time"></i>
-          <span style="margin-left: 10px">{{ scope.row.date }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="姓名"
-        width="180">
-        <template slot-scope="scope">
-          <el-popover trigger="hover" placement="top">
-            <p>姓名: {{ scope.row.name }}</p>
-            <p>住址: {{ scope.row.address }}</p>
-            <div slot="reference" class="name-wrapper">
-              <el-tag size="medium">{{ scope.row.name }}</el-tag>
-            </div>
-          </el-popover>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作">
-        <template slot-scope="scope">
-          <el-button
-            size="mini"
-            @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-          <el-button
-            size="mini"
-            type="danger"
-            @click="handleDelete(scope.$index, scope.row)">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-
+    <DynamicForm :formConfig="formConfig" :value="formData" @input="formChange"/>
+    <SearchFormComponent
+      ref="form"
+      :optionsList="optionsList"
+      @emitEvent="handleTableEvent"
+    />
+    <TableComponent
+      ref="table"
+      :columnsData="columnsData"
+      @emitEvent="handleTableEvent"
+    />
 
 
     <el-upload
@@ -63,7 +36,39 @@
 
 <script>
   import axios from 'axios'
+  import TableComponent from '../components/TableComponent.vue'
+  import SearchFormComponent from '../components/SearchFormComponent.vue'
+  import DynamicForm from '../components/DynamicForm.vue'
   const uploadRequest = axios.create({})
+  let searchModel = {
+    name: 'searchModel',
+    post: function(params){
+      console.log(params)
+      return Promise.resolve("searchModel")
+    }
+  }
+  let editModel = {
+    name: 'editModel',
+    post: function(params){
+      console.log(params)
+      return Promise.resolve("editModel")
+    }
+  }
+  let delModel = {
+    name: 'delModel',
+    post: function(params){
+      console.log(params)
+      return Promise.resolve("delModel")
+    }
+  }
+  let cancelModel = {
+    name: 'cancelModel',
+    post: function(params){
+      console.log(params)
+      return Promise.resolve("cancelModel")
+    }
+  }
+
   export default {
     asyncData({ req }) {
       return {
@@ -75,26 +80,128 @@
         title: `About Page (${this.name}-side)`
       }
     },
-    data(){
+    components: {
+      TableComponent,
+      SearchFormComponent,
+      DynamicForm,
+    },
+    data(vm){
       return {
         fileList: null,
-        tableData: [{
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1517 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1519 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }]
+        columnsData: [
+          {
+            label: '日期',
+            attrName: 'date',
+            width: 180,
+          },
+          {
+            label: '用户',
+            type: 'formatter',
+            component: 'product_list_table_user_component',
+          },
+          {
+            label: '操作',
+            type: 'formatter',
+            component: 'product_list_table_operation_component',
+          },
+        ],
+        handlerMap: {
+          search: {
+            paramsExchange: function(row){
+              return row
+            },
+            handlerModel: searchModel,
+            callback: ((res) => {
+              console.log(this)
+              console.log(res)
+            }).bind(vm),
+          },
+          edit: {
+            paramsExchange: function(row){
+              return row
+            },
+            handlerModel: editModel,
+            callback: ((res) => {
+              console.log(this)
+              console.log(res)
+            }).bind(vm),
+          },
+          cancel: {
+            paramsExchange: function(row){
+              return row
+            },
+            handlerModel: cancelModel,
+            callback: ((res) => {
+              console.log(this)
+              console.log(res)
+            }).bind(vm),
+          },
+          del: {
+            paramsExchange: function(row){
+              return row
+            },
+            handlerModel: delModel,
+            callback: ((res) => {
+              console.log(this)
+              console.log(res)
+            }).bind(vm),
+          },
+        },
+        optionsList: [
+          {
+            attrName: 'productName',
+            initValue: '雨伞',
+            exchange: function(value){
+              return value
+            },
+            component: 'product_list_form_input'
+          }
+        ],
+        formData: {
+          "name": "Genji",
+          "gender": "1"
+        },
+        formConfig: {
+          "inline": true,
+          "labelPosition": "right",
+          "labelWidth": "",
+          "size": "small",
+          "statusIcon": true,
+          "formItemList": [
+            {
+              "type": "input",
+              "label": "姓名",
+              "disable": false,
+              "readonly": false,
+              "value": "",
+              "placeholder": "请输入姓名",
+              "rules": [],
+              "key": "name",
+              "subtype": "text"
+            },
+            {
+              "type": "radio",
+              "label": "性别",
+              "value": "",
+              "button": false,
+              "border": true,
+              "rules": [],
+              "key": "gender",
+              "options": [
+                {
+                  "value": "1",
+                  "label": "男",
+                  "disabled": false
+                },
+                {
+                  "value": "0",
+                  "label": "女",
+                  "disabled": false
+                }
+              ]
+            }
+          ]
+        }
       }
     },
     methods: {
@@ -137,11 +244,26 @@
         reader.readAsDataURL(this.fileList);
       },
 
-      handleEdit(index, row) {
-        console.log(index, row);
+
+
+      handleTableEvent(params){
+        let event = params.type
+        let handlerObj = this.handlerMap[event]
+        let model = handlerObj.handlerModel
+        let requestParams = handlerObj.paramsExchange(params.data)
+        let callback = handlerObj.callback
+        model.post(requestParams)
+          .then((res) => {
+            callback(res)
+          })
+          .catch((error) => {
+            console.log(error)
+          })
       },
-      handleDelete(index, row) {
-        console.log(index, row);
+
+      formChange(data){
+        this.formData = data
+        console.log(this.formData)
       }
     },
     mounted(){

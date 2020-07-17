@@ -83,6 +83,11 @@
         margin: 0 -20px;
         padding: 0 20px;
       }
+      &.is-active {
+        a, i{
+          color: #409EFF !important;
+        }
+      }
     }
     .el-submenu {
       .el-menu-item{
