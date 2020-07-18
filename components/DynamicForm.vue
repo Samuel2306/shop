@@ -7,7 +7,6 @@
     :label-width="formConfig.labelWidth"
     :size='formConfig.size'
     :status-icon="formConfig.statusIcon">
-    <slot/>
     <dynamic-form-item
       v-for="item in formConfig.formItemList"
       :key="item.key"

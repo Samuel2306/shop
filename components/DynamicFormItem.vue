@@ -24,6 +24,62 @@
         :disabled="o.disabled">
       </el-option>
     </el-select>
+    <el-radio-group
+      v-else-if="item.type==='radio'"
+      v-bind="$attrs" v-on="$listeners"
+      :disabled="item.disable"
+      :readonly="item.readonly">
+      <el-radio-button
+        v-if="item.button"
+        v-for="(option,index) in item.options"
+        :key="index"
+        :disabled="option.disabled"
+        :label="option.value">
+        {{option.label}}
+      </el-radio-button>
+      <el-radio
+        v-if="!item.button"
+        v-for="(option,index) in item.options"
+        :key="index"
+        :disabled="option.disabled"
+        :label="option.value">
+        {{option.label}}
+      </el-radio>
+    </el-radio-group>
+    <el-checkbox-group
+      v-else-if="item.type==='checkbox'"
+      v-bind="$attrs" v-on="$listeners"
+      :max="item.max"
+      :min="item.min"
+      :disabled="item.disable"
+      :readonly="item.readonly">
+      <el-checkbox-button
+        v-if="item.button"
+        v-for="(option,index) in item.options"
+        :key="index"
+        :disabled="option.disabled"
+        :label="option.value">
+        {{option.label}}
+      </el-checkbox-button>
+      <el-checkbox
+        v-if="!item.button"
+        v-for="(option,index) in item.options"
+        :key="index"
+        :disabled="option.disabled"
+        :label="option.value">
+        {{option.label}}
+      </el-checkbox>
+    </el-checkbox-group>
+
+    <el-cascader
+      v-else-if="item.type==='cascader'"
+      :options="item.options"
+      :props="item.props"
+      @change="changeCascader"
+      :show-all-levels="false"
+      collapse-tags
+      clearable>
+    </el-cascader>
     <span v-else>未知控件类型</span>
   </el-form-item>
 </template>
@@ -35,6 +91,11 @@
       item: {
         type: Object,
         required: true
+      }
+    },
+    methods: {
+      changeCascader(value){
+        this.$emit('input', value)
       }
     }
   }

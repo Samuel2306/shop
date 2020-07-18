@@ -159,7 +159,10 @@
         ],
         formData: {
           "name": "Genji",
-          "gender": "1"
+          "gender": "1",
+          "origin": "",
+          "love": [],
+          "city": [],
         },
         formConfig: {
           "inline": true,
@@ -180,6 +183,20 @@
               "subtype": "text"
             },
             {
+              "type": "select",
+              "label": "来源",
+              "multiple": false,
+              "multipleLimit": 3,
+              "value": "",
+              "placeholder": "请输入姓名",
+              "rules": [],
+              "key": "origin",
+              "options": [
+                {"label": "精品商城","value": "PT001"},
+                {"label": "车商城","value": "PT003"}
+              ]
+            },
+            {
               "type": "radio",
               "label": "性别",
               "value": "",
@@ -189,16 +206,99 @@
               "key": "gender",
               "options": [
                 {
-                  "value": "1",
+                  "value": 1,
                   "label": "男",
                   "disabled": false
                 },
                 {
-                  "value": "0",
+                  "value": 0,
                   "label": "女",
                   "disabled": false
                 }
               ]
+            },
+            {
+              "type": "checkbox",
+              "label": "爱好",
+              "value": [],
+              "button": true,
+              "border": true,
+              "rules": [],
+              "key": "love",
+              "min": 0,
+              "max": 100,
+              "options": [
+                {
+                  "value": "1",
+                  "label": "游泳",
+                  "disabled": false
+                },
+                {
+                  "value": "2",
+                  "label": "看电影",
+                  "disabled": false
+                },
+                {
+                  "value": "3",
+                  "label": "打篮球",
+                  "disabled": false
+                }
+              ]
+            },
+            {
+              "type": "cascader",
+              "label": "城市",
+              "value": [],
+              "rules": [],
+              "key": "city",
+              props: { multiple: true },
+              "options": [{
+                value: 1,
+                label: '东南',
+                children: [{
+                  value: 2,
+                  label: '上海',
+                  children: [
+                    { value: 3, label: '普陀' },
+                    { value: 4, label: '黄埔' },
+                    { value: 5, label: '徐汇' }
+                  ]
+                }, {
+                  value: 7,
+                  label: '江苏',
+                  children: [
+                    { value: 8, label: '南京' },
+                    { value: 9, label: '苏州' },
+                    { value: 10, label: '无锡' }
+                  ]
+                }, {
+                  value: 12,
+                  label: '浙江',
+                  children: [
+                    { value: 13, label: '杭州' },
+                    { value: 14, label: '宁波' },
+                    { value: 15, label: '嘉兴' }
+                  ]
+                }]
+              }, {
+                value: 17,
+                label: '西北',
+                children: [{
+                  value: 18,
+                  label: '陕西',
+                  children: [
+                    { value: 19, label: '西安' },
+                    { value: 20, label: '延安' }
+                  ]
+                }, {
+                  value: 21,
+                  label: '新疆维吾尔族自治区',
+                  children: [
+                    { value: 22, label: '乌鲁木齐' },
+                    { value: 23, label: '克拉玛依' }
+                  ]
+                }]
+              }]
             }
           ]
         }
