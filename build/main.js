@@ -124,7 +124,7 @@ async function start() {
   app.use(koaBody({
     // 支持文件格式
     multipart: true,
-    encoding: 'uft-8',
+    encoding: 'utf-8',
     formidable: {
       // 上传目录
       uploadDir: path.join(__dirname, 'upload'),
@@ -280,7 +280,7 @@ const path = __webpack_require__(2);
 
 
 
-__WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].queue = new __WEBPACK_IMPORTED_MODULE_6__util__["b" /* Queue */](10);
+__WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].queue = new __WEBPACK_IMPORTED_MODULE_6__util__["b" /* Queue */](10);
 let tbAttrNames = ['orderNo', // "订单编号"
 'title', // "标题"
 'price', // "价格"
@@ -324,11 +324,11 @@ function delDir(path, callback) {
 function validateFile(currentFile, clearQueue) {
   if (clearQueue == 1) {
     // 1表示清除所有文件名的缓存
-    __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].queue.clear();
+    __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].queue.clear();
   }
   let fileName = currentFile.name;
   /*根据文件名称避免重复上传*/
-  if (__WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].queue.isInQueue(fileName)) {
+  if (__WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].queue.isInQueue(fileName)) {
     return {
       body: new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]("该文件已上传，请勿重复上传"),
       flag: false
@@ -392,7 +392,7 @@ function validateData(data, nums, all) {
   if (all) {
     for (let i = 0; i < nums; i++) {
       promiseList.push(new Promise(function (resolve, reject) {
-        __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].findOne({ "orderNo": data[i].orderNo }, function (err, order) {
+        __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].findOne({ "orderNo": data[i].orderNo }, function (err, order) {
           if (err) {
             console.log("查找出错");
             resolve(true);
@@ -418,7 +418,7 @@ function validateData(data, nums, all) {
     for (let j = 0; j < indexs.length; j++) {
       let index = indexs[j];
       promiseList.push(new Promise(function (resolve, reject) {
-        __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].findOne({ "orderNo": data[index].orderNo }, function (err, order) {
+        __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].findOne({ "orderNo": data[index].orderNo }, function (err, order) {
           if (err) {
             console.log("查找出错");
             resolve(true);
@@ -497,7 +497,7 @@ router.post('/upload', async ctx => {
       let dataList = fileDataConvert(excelData[0].data, orderAttrs, platform, createDate);
       let flag = await fileContentValidate(dataList);
       if (flag) {
-        __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].queue.add(currentFile.name);
+        __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].queue.add(currentFile.name);
         orders = orders.concat(dataList);
       } else {
         ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]("请勿重复上传数据相同的文件");
@@ -524,7 +524,7 @@ router.post('/upload', async ctx => {
         let dataList = fileDataConvert(res, orderAttrs, platform, createDate);
         let flag = await fileContentValidate(dataList);
         if (flag) {
-          __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].queue.add(currentFile.name);
+          __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].queue.add(currentFile.name);
           orders = orders.concat(dataList);
         } else {
           ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]("请勿重复上传文件");
@@ -542,19 +542,50 @@ router.post('/upload', async ctx => {
   /*删除换存在服务器的文件*/
 
   await new Promise(function (resolve, reject) {
-    __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* importOrdersModel */].create(orders, function (err, res) {
+    __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].create(orders, function (err, res) {
       if (err) {
-        reject();
+        reject(err);
       } else {
-        resolve(err);
+        resolve(res);
       }
-      return;
     });
-  }).then(() => {
+  }).then(res => {
     // ctx.body = orders
     ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]("插入数据成功");
   }).catch(err => {
     ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */](err ? err : "插入数据失败");
+  });
+});
+
+// 查询订单
+router.post('/query', async ctx => {
+  let pageSize = ctx.request.body.pageSize;
+  let pageNum = ctx.request.body.pageNum;
+  let orderNo = ctx.request.body.orderNo;
+  let productName = ctx.request.body.productName;
+
+  if (!pageSize) {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]("缺少pageSize参数");
+    return;
+  }
+  if (!pageNum) {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]("缺少pageNum参数");
+    return;
+  }
+
+  await new Promise(function (resolve, reject) {
+    __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].find({}, function (err, res) {
+      console.log(err);
+      if (err) {
+        reject(err);
+      } else {
+        resolve(res);
+      }
+    });
+  }).then(res => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]('获取数据成功', res);
+  }).catch(err => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */](err ? err : "获取数据失败");
   });
 });
 
@@ -665,14 +696,14 @@ module.exports = require("iconv-lite");
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return importOrdersModel; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return OrdersModel; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__schema__ = __webpack_require__(18);
 
 
 
-let importOrdersModel = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.model('orders', __WEBPACK_IMPORTED_MODULE_1__schema__["a" /* importOrdersSchema */]);
+let OrdersModel = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.model('order', __WEBPACK_IMPORTED_MODULE_1__schema__["a" /* OrdersSchema */]);
 
 
 
@@ -681,13 +712,13 @@ let importOrdersModel = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.model('
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return importOrdersSchema; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return OrdersSchema; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
 
 let Schema = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.Schema;
 
-let importOrdersSchema = new Schema({
+let OrdersSchema = new Schema({
   'orderNo': {
     type: String,
     index: true // 建立索引
@@ -743,21 +774,22 @@ const replaceAll = function (str, oldContent, newContent) {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return SuccessResult; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ErrorResult; });
 class Result {
-  constructor({ code, msg }) {
+  constructor({ code, msg, data }) {
     this.resultCode = code;
     this.resultResc = msg;
+    this.resultData = data || null;
   }
 }
 
 class SuccessResult extends Result {
-  constructor(msg) {
-    super({ code: 'WL-0000', msg: msg ? msg : '操作成功' });
+  constructor(msg, data) {
+    super({ code: 'WL-0000', msg: msg ? msg : '操作成功', data: data });
   }
 }
 
 class ErrorResult extends Result {
   constructor(msg) {
-    super({ code: 'WL-0010', msg: msg ? msg : '操作失败' });
+    super({ code: 'WL-0010', msg: msg ? msg : '操作失败', data: null });
   }
 }
 

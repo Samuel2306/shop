@@ -1,12 +1,12 @@
 import mongoose from'mongoose'
 import {
-  importOrdersSchema
+  OrdersSchema
 } from './schema'
 
 
-let importOrdersModel = mongoose.model('orders', importOrdersSchema);
+let OrdersModel = mongoose.model('order', OrdersSchema);
 
 
 export {
-  importOrdersModel
+  OrdersModel
 }

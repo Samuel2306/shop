@@ -27,7 +27,7 @@ async function start () {
   app.use(koaBody({
     // 支持文件格式
     multipart: true,
-    encoding:'uft-8',
+    encoding:'utf-8',
     formidable: {
       // 上传目录
       uploadDir:path.join(__dirname,'upload'),

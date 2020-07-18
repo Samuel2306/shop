@@ -8,7 +8,7 @@ const path = require('path')
 import xlsx2json from "node-xlsx";
 import iconv_lite from'iconv-lite';
 import {
-  importOrdersModel
+  OrdersModel
 } from '../../model/order/model'
 import {
   SuccessResult,
@@ -17,7 +17,7 @@ import {
   replaceAll,
 } from '../../util'
 
-importOrdersModel.queue = new Queue(10)
+OrdersModel.queue = new Queue(10)
 let tbAttrNames = [
   'orderNo',  // "订单编号"
   'title', // "标题"
@@ -63,12 +63,12 @@ function delDir(path, callback){
 }
 
 function validateFile(currentFile, clearQueue){
-  if(clearQueue == 1){   // 1表示清除所有文件名的缓存
-    importOrdersModel.queue.clear()
+  if(clearQueue == 1) {   // 1表示清除所有文件名的缓存
+    OrdersModel.queue.clear()
   }
   let fileName = currentFile.name
   /*根据文件名称避免重复上传*/
-  if(importOrdersModel.queue.isInQueue(fileName)){
+  if(OrdersModel.queue.isInQueue(fileName)){
     return {
       body: new ErrorResult("该文件已上传，请勿重复上传"),
       flag: false
@@ -132,7 +132,7 @@ function validateData(data, nums, all){
   if(all){
     for (let i = 0; i < nums; i++) {
       promiseList.push(new Promise(function(resolve, reject){
-        importOrdersModel.findOne({"orderNo": data[i].orderNo}, function (err, order) {
+        OrdersModel.findOne({"orderNo": data[i].orderNo}, function (err, order) {
           if(err) {
             console.log("查找出错")
             resolve(true)
@@ -158,7 +158,7 @@ function validateData(data, nums, all){
     for(let j = 0; j < indexs.length; j++){
       let index = indexs[j]
       promiseList.push(new Promise(function(resolve, reject){
-        importOrdersModel.findOne({"orderNo": data[index].orderNo}, function (err, order) {
+        OrdersModel.findOne({"orderNo": data[index].orderNo}, function (err, order) {
           if(err) {
             console.log("查找出错")
             resolve(true)
@@ -239,7 +239,7 @@ router.post('/upload', async ctx => {
       let dataList = fileDataConvert(excelData[0].data, orderAttrs, platform, createDate)
       let flag = await fileContentValidate(dataList)
       if(flag){
-        importOrdersModel.queue.add(currentFile.name)
+        OrdersModel.queue.add(currentFile.name)
         orders = orders.concat(dataList)
       }else{
         ctx.body = new ErrorResult("请勿重复上传数据相同的文件")
@@ -267,7 +267,7 @@ router.post('/upload', async ctx => {
         let dataList = fileDataConvert(res, orderAttrs, platform, createDate)
         let flag = await fileContentValidate(dataList)
         if(flag){
-          importOrdersModel.queue.add(currentFile.name)
+          OrdersModel.queue.add(currentFile.name)
           orders = orders.concat(dataList)
         }else{
           ctx.body = new ErrorResult("请勿重复上传文件")
@@ -290,21 +290,54 @@ router.post('/upload', async ctx => {
 
 
   await new Promise(function(resolve, reject){
-    importOrdersModel.create(orders, function (err, res) {
+    OrdersModel.create(orders, function (err, res) {
       if (err) {
-        reject()
+        reject(err)
       } else {
-        resolve(err)
+        resolve(res)
       }
-      return
     })
   })
-    .then(() => {
+    .then((res) => {
       // ctx.body = orders
       ctx.body = new SuccessResult("插入数据成功")
     })
     .catch((err) => {
       ctx.body = new ErrorResult(err ? err : "插入数据失败")
+    })
+})
+
+// 查询订单
+router.post('/query', async ctx => {
+  let pageSize = ctx.request.body.pageSize
+  let pageNum = ctx.request.body.pageNum
+  let orderNo = ctx.request.body.orderNo
+  let productName = ctx.request.body.productName
+
+  if(!pageSize){
+    ctx.body = new SuccessResult("缺少pageSize参数")
+    return
+  }
+  if(!pageNum){
+    ctx.body = new SuccessResult("缺少pageNum参数")
+    return
+  }
+
+  await new Promise(function(resolve, reject){
+    OrdersModel.find({}, function (err, res) {
+      console.log(err)
+      if (err) {
+        reject(err)
+      } else {
+        resolve(res)
+      }
+    })
+  })
+    .then((res) => {
+      ctx.body = new SuccessResult('获取数据成功',res)
+    })
+    .catch((err) => {
+      ctx.body = new ErrorResult(err ? err : "获取数据失败")
     })
 })
 

@@ -1,7 +1,7 @@
 import mongoose from'mongoose'
 let Schema = mongoose.Schema;
 
-let importOrdersSchema = new Schema({
+let OrdersSchema = new Schema({
   'orderNo': {
     type: String,
     index: true, // 建立索引
@@ -21,5 +21,5 @@ let importOrdersSchema = new Schema({
 
 
 export {
-  importOrdersSchema,
+  OrdersSchema,
 }
