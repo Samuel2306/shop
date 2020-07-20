@@ -1,6 +1,6 @@
 import mongoose from'mongoose'
 import {
-  OrdersSchema
+  OrdersSchema,
 } from './schema'
 
 

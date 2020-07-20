@@ -8,7 +8,7 @@ const path = require('path')
 import xlsx2json from "node-xlsx";
 import iconv_lite from'iconv-lite';
 import {
-  OrdersModel
+  OrdersModel,
 } from '../../model/order/model'
 import {
   SuccessResult,

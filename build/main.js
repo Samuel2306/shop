@@ -721,7 +721,10 @@ let Schema = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.Schema;
 let OrdersSchema = new Schema({
   'orderNo': {
     type: String,
-    index: true // 建立索引
+    index: {
+      unique: true,
+      dropDups: true
+    } // 建立索引
   }, // "订单编号"
   'title': String, // "标题"
   'price': Number, // "价格"

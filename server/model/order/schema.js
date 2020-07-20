@@ -4,7 +4,10 @@ let Schema = mongoose.Schema;
 let OrdersSchema = new Schema({
   'orderNo': {
     type: String,
-    index: true, // 建立索引
+    index: {
+      unique: true,
+      dropDups: true
+    }, // 建立索引
   },  // "订单编号"
   'title':  String, // "标题"
   'price':  Number, // "价格"
@@ -18,7 +21,6 @@ let OrdersSchema = new Schema({
   'createDate':  String, // "创建时间"
   'platform':  String, // "所属平台"
 });
-
 
 export {
   OrdersSchema,
