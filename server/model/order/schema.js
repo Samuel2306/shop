@@ -4,6 +4,7 @@ let Schema = mongoose.Schema;
 let OrdersSchema = new Schema({
   'orderNo': {
     type: String,
+    required: true,
     index: {
       unique: true,
       dropDups: true

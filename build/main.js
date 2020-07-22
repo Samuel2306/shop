@@ -561,8 +561,10 @@ router.post('/upload', async ctx => {
 router.post('/query', async ctx => {
   let pageSize = ctx.request.body.pageSize;
   let pageNum = ctx.request.body.pageNum;
-  let orderNo = ctx.request.body.orderNo;
-  let productName = ctx.request.body.productName;
+  let orderNo = ctx.request.body.orderNo || ''; // 订单编号
+  let productName = ctx.request.body.productName || ''; // 商品名称， 对应文档的title标题
+  let productCode = ctx.request.body.productCode || ''; // 商品编号
+  let createDateSort = -1; // 根据createDate生序排序
 
   if (!pageSize) {
     ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]("缺少pageSize参数");
@@ -573,18 +575,38 @@ router.post('/query', async ctx => {
     return;
   }
 
-  await new Promise(function (resolve, reject) {
-    __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].find({}, function (err, res) {
+  await new Promise(async function (resolve, reject) {
+    let orderNoReg = new RegExp(orderNo, 'i');
+    let titleReg = new RegExp(productName, 'i');
+    let productCodeReg = new RegExp(productCode, 'i');
+
+    let documentCount;
+    await __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].count({}, (err, count) => {
+      console.log(1);
+      documentCount = err ? 0 : parseInt(count);
+    });
+    console.log(2);
+    let orderModel = __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].find({
+      $and: [//多条件，数组
+      { orderNo: { $regex: orderNoReg } }, { title: { $regex: titleReg } }, { productCode: { $regex: productCodeReg } }]
+    });
+    orderModel.sort({ "createDate": createDateSort }).skip((pageNum - 1) * pageSize).limit(parseInt(pageSize));
+    orderModel.exec(function (err, res) {
       console.log(err);
       if (err) {
         reject(err);
       } else {
-        resolve(res);
+        let data = {
+          total: documentCount,
+          data: res
+        };
+        resolve(data);
       }
     });
   }).then(res => {
     ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]('获取数据成功', res);
   }).catch(err => {
+    console.error(err);
     ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */](err ? err : "获取数据失败");
   });
 });
@@ -721,6 +743,7 @@ let Schema = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.Schema;
 let OrdersSchema = new Schema({
   'orderNo': {
     type: String,
+    required: true,
     index: {
       unique: true,
       dropDups: true
