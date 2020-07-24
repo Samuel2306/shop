@@ -217,7 +217,10 @@ router.post('/upload', async ctx => {
   // console.log(files)
 
   if(!files || !files.files ){
-    ctx.body = "请选择相应文件进行上传"
+    ctx.body = new ErrorResult({
+      msg: "请选择相应文件进行上传",
+      code: '0006'
+    })
     return
   }
 
@@ -242,7 +245,10 @@ router.post('/upload', async ctx => {
         OrdersModel.queue.add(currentFile.name)
         orders = orders.concat(dataList)
       }else{
-        ctx.body = new ErrorResult("请勿重复上传数据相同的文件")
+        ctx.body = new ErrorResult({
+          msg: "请勿重复上传数据相同的文件",
+          code: '0010'
+        })
         return
       }
     }else if(checkCSVType(res[i])){
@@ -270,7 +276,10 @@ router.post('/upload', async ctx => {
           OrdersModel.queue.add(currentFile.name)
           orders = orders.concat(dataList)
         }else{
-          ctx.body = new ErrorResult("请勿重复上传文件")
+          ctx.body = new ErrorResult({
+            msg: "请勿重复上传文件",
+            code: '0010'
+          })
           return
         }
       } catch (e) {
@@ -313,10 +322,14 @@ router.post('/upload', async ctx => {
   })
     .then((res) => {
       // ctx.body = orders
-      ctx.body = new SuccessResult("插入数据成功")
+      ctx.body = new SuccessResult({
+        msg: "插入数据成功"
+      })
     })
     .catch((err) => {
-      ctx.body = new ErrorResult(err && err.message ? err.message : "插入数据失败")
+      ctx.body = new ErrorResult({
+        msg: err ? err : "导入数据失败"
+      })
     })
 })
 
@@ -329,11 +342,17 @@ router.post('/query', async ctx => {
   let productCode = ctx.request.body.productCode || '' // 商品编号
 
   if(!pageSize){
-    ctx.body = new SuccessResult("缺少pageSize参数")
+    ctx.body = new ErrorResult({
+      code: '0006',
+      msg: "缺少pageSize参数"
+    })
     return
   }
   if(!pageNum){
-    ctx.body = new SuccessResult("缺少pageNum参数")
+    ctx.body = new ErrorResult({
+      code: '0006',
+      msg: "缺少pageNum参数"
+    })
     return
   }
 
@@ -379,11 +398,15 @@ router.post('/query', async ctx => {
     })
   })
     .then((res) => {
-      ctx.body = new SuccessResult('获取数据成功',res)
+      ctx.body = new SuccessResult({
+        msg: '获取数据成功',
+        data: res
+      })
     })
     .catch((err) => {
-      console.error(err)
-      ctx.body = new ErrorResult(err && err.message ? err.message : "获取数据失败")
+      ctx.body = new ErrorResult({
+        msg: err ? err : "获取数据失败"
+      })
     })
 })
 
@@ -404,11 +427,22 @@ router.post('/insert', async ctx => {
     })
   })
     .then((res) => {
-      ctx.body = new SuccessResult('插入数据成功')
+      ctx.body = new SuccessResult({
+        msg: '插入数据成功'
+      })
     })
     .catch((err) => {
-      console.error(err)
-      ctx.body = new ErrorResult(err && err.message ? err.message : "插入数据失败")
+      let propName = ''
+      if(err && err.code == 11000){
+        let keyValue = err["keyValue"]
+        for (let prop in keyValue) {
+          propName = prop
+        }
+      }
+      ctx.body = new ErrorResult({
+        code: err && err.code == 11000 ? '0002' : '',
+        msg: propName ? '插入数据的' + propName + '属性必须保持唯一性' : "插入数据失败"
+      })
     })
 })
 

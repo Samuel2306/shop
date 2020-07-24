@@ -475,7 +475,10 @@ router.post('/upload', async ctx => {
   // console.log(files)
 
   if (!files || !files.files) {
-    ctx.body = "请选择相应文件进行上传";
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]({
+      msg: "请选择相应文件进行上传",
+      code: '0006'
+    });
     return;
   }
 
@@ -500,7 +503,10 @@ router.post('/upload', async ctx => {
         __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].queue.add(currentFile.name);
         orders = orders.concat(dataList);
       } else {
-        ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]("请勿重复上传数据相同的文件");
+        ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]({
+          msg: "请勿重复上传数据相同的文件",
+          code: '0010'
+        });
         return;
       }
     } else if (Object(__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* checkCSVType */])(res[i])) {
@@ -527,7 +533,10 @@ router.post('/upload', async ctx => {
           __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].queue.add(currentFile.name);
           orders = orders.concat(dataList);
         } else {
-          ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]("请勿重复上传文件");
+          ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]({
+            msg: "请勿重复上传文件",
+            code: '0010'
+          });
           return;
         }
       } catch (e) {
@@ -567,9 +576,13 @@ router.post('/upload', async ctx => {
     });
   }).then(res => {
     // ctx.body = orders
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]("插入数据成功");
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]({
+      msg: "插入数据成功"
+    });
   }).catch(err => {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */](err && err.message ? err.message : "插入数据失败");
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]({
+      msg: err ? err : "导入数据失败"
+    });
   });
 });
 
@@ -582,11 +595,17 @@ router.post('/query', async ctx => {
   let productCode = ctx.request.body.productCode || ''; // 商品编号
 
   if (!pageSize) {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]("缺少pageSize参数");
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]({
+      code: '0006',
+      msg: "缺少pageSize参数"
+    });
     return;
   }
   if (!pageNum) {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]("缺少pageNum参数");
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]({
+      code: '0006',
+      msg: "缺少pageNum参数"
+    });
     return;
   }
 
@@ -621,10 +640,14 @@ router.post('/query', async ctx => {
       }
     });
   }).then(res => {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]('获取数据成功', res);
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]({
+      msg: '获取数据成功',
+      data: res
+    });
   }).catch(err => {
-    console.error(err);
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */](err && err.message ? err.message : "获取数据失败");
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]({
+      msg: err ? err : "获取数据失败"
+    });
   });
 });
 
@@ -641,10 +664,21 @@ router.post('/insert', async ctx => {
       }
     });
   }).then(res => {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]('插入数据成功');
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]({
+      msg: '插入数据成功'
+    });
   }).catch(err => {
-    console.error(err);
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */](err && err.message ? err.message : "插入数据失败");
+    let propName = '';
+    if (err && err.code == 11000) {
+      let keyValue = err["keyValue"];
+      for (let prop in keyValue) {
+        propName = prop;
+      }
+    }
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]({
+      code: err && err.code == 11000 ? '0002' : '',
+      msg: propName ? '插入数据的' + propName + '属性必须保持唯一性' : "插入数据失败"
+    });
   });
 });
 
@@ -837,6 +871,16 @@ const replaceAll = function (str, oldContent, newContent) {
 /* unused harmony export Result */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return SuccessResult; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ErrorResult; });
+let resultCodeMap = {
+  'WL-0000': "成功",
+  'WL-0001': "未知错误",
+  'WL-0002': "数据唯一性错误",
+  'WL-0006': "参数缺失",
+  'WL-0008': "用户没有权限",
+  'WL-0010': "文件重复上传",
+  'WL-0014': "用户过期"
+};
+
 class Result {
   constructor({ code, msg, data }) {
     this.resultCode = code;
@@ -846,14 +890,22 @@ class Result {
 }
 
 class SuccessResult extends Result {
-  constructor(msg, data) {
-    super({ code: 'WL-0000', msg: msg ? msg : '操作成功', data: data });
+  constructor({ msg, data }) {
+    super({
+      code: 'WL-0000',
+      msg: msg ? msg : '操作成功',
+      data: data
+    });
   }
 }
 
 class ErrorResult extends Result {
-  constructor(msg) {
-    super({ code: 'WL-0010', msg: msg ? msg : '操作失败', data: null });
+  constructor({ code, msg }) {
+    super({
+      code: code ? 'WL-' + code : "WL-0001", // WL-0001未知错误
+      msg: msg ? msg : '操作失败',
+      data: null
+    });
   }
 }
 
