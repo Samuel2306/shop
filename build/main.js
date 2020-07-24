@@ -246,6 +246,8 @@ router.get('/aaa', async ctx => {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__model__ = __webpack_require__(25);
+
 let router = __webpack_require__(0)();
 // 设置模块名为接口前缀
 router.prefix('/api/v1/product');
@@ -269,7 +271,7 @@ router.get('/aaa', async ctx => {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_node_xlsx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_node_xlsx__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_iconv_lite__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_iconv_lite___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_iconv_lite__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__model_order_model__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__model__ = __webpack_require__(25);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__util__ = __webpack_require__(19);
 
 
@@ -280,7 +282,7 @@ const path = __webpack_require__(2);
 
 
 
-__WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].queue = new __WEBPACK_IMPORTED_MODULE_6__util__["b" /* Queue */](10);
+__WEBPACK_IMPORTED_MODULE_5__model__["a" /* OrdersModel */].queue = new __WEBPACK_IMPORTED_MODULE_6__util__["b" /* Queue */](10);
 let tbAttrNames = ['orderNo', // "订单编号"
 'title', // "标题"
 'price', // "价格"
@@ -324,11 +326,11 @@ function delDir(path, callback) {
 function validateFile(currentFile, clearQueue) {
   if (clearQueue == 1) {
     // 1表示清除所有文件名的缓存
-    __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].queue.clear();
+    __WEBPACK_IMPORTED_MODULE_5__model__["a" /* OrdersModel */].queue.clear();
   }
   let fileName = currentFile.name;
   /*根据文件名称避免重复上传*/
-  if (__WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].queue.isInQueue(fileName)) {
+  if (__WEBPACK_IMPORTED_MODULE_5__model__["a" /* OrdersModel */].queue.isInQueue(fileName)) {
     return {
       body: new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]("该文件已上传，请勿重复上传"),
       flag: false
@@ -392,7 +394,7 @@ function validateData(data, nums, all) {
   if (all) {
     for (let i = 0; i < nums; i++) {
       promiseList.push(new Promise(function (resolve, reject) {
-        __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].findOne({ "orderNo": data[i].orderNo }, function (err, order) {
+        __WEBPACK_IMPORTED_MODULE_5__model__["a" /* OrdersModel */].findOne({ "orderNo": data[i].orderNo }, function (err, order) {
           if (err) {
             console.log("查找出错");
             resolve(true);
@@ -418,7 +420,7 @@ function validateData(data, nums, all) {
     for (let j = 0; j < indexs.length; j++) {
       let index = indexs[j];
       promiseList.push(new Promise(function (resolve, reject) {
-        __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].findOne({ "orderNo": data[index].orderNo }, function (err, order) {
+        __WEBPACK_IMPORTED_MODULE_5__model__["a" /* OrdersModel */].findOne({ "orderNo": data[index].orderNo }, function (err, order) {
           if (err) {
             console.log("查找出错");
             resolve(true);
@@ -500,7 +502,7 @@ router.post('/upload', async ctx => {
       let dataList = fileDataConvert(excelData[0].data, orderAttrs, platform, createDate);
       let flag = await fileContentValidate(dataList);
       if (flag) {
-        __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].queue.add(currentFile.name);
+        __WEBPACK_IMPORTED_MODULE_5__model__["a" /* OrdersModel */].queue.add(currentFile.name);
         orders = orders.concat(dataList);
       } else {
         ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]({
@@ -530,7 +532,7 @@ router.post('/upload', async ctx => {
         let dataList = fileDataConvert(res, orderAttrs, platform, createDate);
         let flag = await fileContentValidate(dataList);
         if (flag) {
-          __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].queue.add(currentFile.name);
+          __WEBPACK_IMPORTED_MODULE_5__model__["a" /* OrdersModel */].queue.add(currentFile.name);
           orders = orders.concat(dataList);
         } else {
           ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]({
@@ -567,7 +569,7 @@ router.post('/upload', async ctx => {
   }
 
   await new Promise(function (resolve, reject) {
-    __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].create(orders, function (err, res) {
+    __WEBPACK_IMPORTED_MODULE_5__model__["a" /* OrdersModel */].create(orders, function (err, res) {
       if (err) {
         reject(err);
       } else {
@@ -615,14 +617,14 @@ router.post('/query', async ctx => {
     let productCodeReg = new RegExp(productCode, 'i');
 
     let documentCount;
-    await __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].count({
+    await __WEBPACK_IMPORTED_MODULE_5__model__["a" /* OrdersModel */].count({
       $and: [//多条件，数组
       { orderNo: { $regex: orderNoReg } }, { title: { $regex: titleReg } }, { productCode: { $regex: productCodeReg } }]
     }, (err, count) => {
       documentCount = err ? 0 : parseInt(count);
     });
 
-    let orderModel = __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].find({
+    let orderModel = __WEBPACK_IMPORTED_MODULE_5__model__["a" /* OrdersModel */].find({
       $and: [//多条件，数组
       { orderNo: { $regex: orderNoReg } }, { title: { $regex: titleReg } }, { productCode: { $regex: productCodeReg } }]
     });
@@ -655,7 +657,7 @@ router.post('/query', async ctx => {
 router.post('/insert', async ctx => {
   let params = ctx.request.body.params ? JSON.parse(ctx.request.body.params) : {};
   await new Promise(async function (resolve, reject) {
-    let orderModel = new __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */](params);
+    let orderModel = new __WEBPACK_IMPORTED_MODULE_5__model__["a" /* OrdersModel */](params);
     orderModel.save(function (err, res) {
       if (err) {
         reject(err);
@@ -1009,6 +1011,65 @@ module.exports = {
     }
   }
 };
+
+/***/ }),
+/* 25 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__order_model__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__product_model__ = __webpack_require__(26);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_0__order_model__["a"]; });
+/* unused harmony reexport ProductsModel */
+
+
+
+
+
+
+/***/ }),
+/* 26 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* unused harmony export ProductsModel */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__schema__ = __webpack_require__(27);
+
+
+
+let ProductsModel = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.model('product', __WEBPACK_IMPORTED_MODULE_1__schema__["a" /* ProductSchema */]);
+
+
+
+/***/ }),
+/* 27 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ProductSchema; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
+
+let Schema = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.Schema;
+
+let ProductSchema = new Schema({
+  'productCode': {
+    type: String,
+    required: true,
+    unique: true
+  }, // "商品编号"
+  'productName': {
+    type: String,
+    required: true,
+    unique: true
+  }, // "商品名称"
+  'price': Number, // "价格"
+  'stock': Number // "库存数量"
+});
+
+
 
 /***/ })
 /******/ ]);
