@@ -286,8 +286,21 @@ router.post('/upload', async ctx => {
   delDir(uploadDir)
   /*删除换存在服务器的文件*/
 
-
-
+  // 淘宝数据存在多条数据属于一个订单的情况
+  let obj = {}
+  let idx = []
+  orders.forEach((order, index) => {
+    if(!obj[order.orderNo]){
+      obj[order.orderNo] = order
+      order.relativeOrder = []
+    }else{
+      obj[order.orderNo].relativeOrder.push(order)
+      idx.push(index)
+    }
+  })
+  for (let i = idx.length - 1; i >= 0; i--) {
+    orders.splice(idx[i], 1)
+  }
 
   await new Promise(function(resolve, reject){
     OrdersModel.create(orders, function (err, res) {
@@ -303,7 +316,7 @@ router.post('/upload', async ctx => {
       ctx.body = new SuccessResult("插入数据成功")
     })
     .catch((err) => {
-      ctx.body = new ErrorResult(err ? err : "插入数据失败")
+      ctx.body = new ErrorResult(err && err.message ? err.message : "插入数据失败")
     })
 })
 
@@ -314,7 +327,6 @@ router.post('/query', async ctx => {
   let orderNo = ctx.request.body.orderNo || ''  // 订单编号
   let productName = ctx.request.body.productName || '' // 商品名称， 对应文档的title标题
   let productCode = ctx.request.body.productCode || '' // 商品编号
-  let createDateSort = -1  // 根据createDate生序排序
 
   if(!pageSize){
     ctx.body = new SuccessResult("缺少pageSize参数")
@@ -332,11 +344,17 @@ router.post('/query', async ctx => {
 
 
     let documentCount
-    await OrdersModel.count({}, (err, count) => {
-      console.log(1)
+    await OrdersModel.count({
+      $and : [ //多条件，数组
+        {orderNo : {$regex : orderNoReg}},
+        {title : {$regex : titleReg}},
+        {productCode : {$regex : productCodeReg}},
+      ]
+    }, (err, count) => {
       documentCount = err ? 0 : parseInt(count)
     })
-    console.log(2)
+
+
     let orderModel = OrdersModel.find(
       {
         $and : [ //多条件，数组
@@ -346,7 +364,7 @@ router.post('/query', async ctx => {
         ]
       }
     )
-    orderModel.sort({"createDate" : createDateSort}).skip((pageNum - 1) * pageSize).limit(parseInt(pageSize))
+    orderModel.sort({"createDate" : -1}).skip((pageNum - 1) * pageSize).limit(parseInt(pageSize))
     orderModel.exec(function (err, res) {
       console.log(err)
       if (err) {
@@ -365,8 +383,36 @@ router.post('/query', async ctx => {
     })
     .catch((err) => {
       console.error(err)
-      ctx.body = new ErrorResult(err ? err : "获取数据失败")
+      ctx.body = new ErrorResult(err && err.message ? err.message : "获取数据失败")
     })
 })
+
+
+// 插入订单
+router.post('/insert', async ctx => {
+  console.log(ctx.request.body.params)
+  let params = ctx.request.body.params ? JSON.parse(ctx.request.body.params) : {}
+  await new Promise(async function(resolve, reject){
+    let orderModel = new OrdersModel(params)
+    orderModel.save(function (err, res) {
+      if (err) {
+        reject(err)
+      }
+      else {
+        resolve(res)
+      }
+
+    })
+  })
+    .then((res) => {
+      ctx.body = new SuccessResult('插入数据成功')
+    })
+    .catch((err) => {
+      console.error(err)
+      ctx.body = new ErrorResult(err && err.message ? err.message : "插入数据失败")
+    })
+})
+
+
 
 export default router

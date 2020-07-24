@@ -541,6 +541,22 @@ router.post('/upload', async ctx => {
   delDir(uploadDir);
   /*删除换存在服务器的文件*/
 
+  // 淘宝数据存在多条数据属于一个订单的情况
+  let obj = {};
+  let idx = [];
+  orders.forEach((order, index) => {
+    if (!obj[order.orderNo]) {
+      obj[order.orderNo] = order;
+      order.relativeOrder = [];
+    } else {
+      obj[order.orderNo].relativeOrder.push(order);
+      idx.push(index);
+    }
+  });
+  for (let i = idx.length - 1; i >= 0; i--) {
+    orders.splice(idx[i], 1);
+  }
+
   await new Promise(function (resolve, reject) {
     __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].create(orders, function (err, res) {
       if (err) {
@@ -553,7 +569,7 @@ router.post('/upload', async ctx => {
     // ctx.body = orders
     ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]("插入数据成功");
   }).catch(err => {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */](err ? err : "插入数据失败");
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */](err && err.message ? err.message : "插入数据失败");
   });
 });
 
@@ -564,7 +580,6 @@ router.post('/query', async ctx => {
   let orderNo = ctx.request.body.orderNo || ''; // 订单编号
   let productName = ctx.request.body.productName || ''; // 商品名称， 对应文档的title标题
   let productCode = ctx.request.body.productCode || ''; // 商品编号
-  let createDateSort = -1; // 根据createDate生序排序
 
   if (!pageSize) {
     ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]("缺少pageSize参数");
@@ -581,16 +596,18 @@ router.post('/query', async ctx => {
     let productCodeReg = new RegExp(productCode, 'i');
 
     let documentCount;
-    await __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].count({}, (err, count) => {
-      console.log(1);
+    await __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].count({
+      $and: [//多条件，数组
+      { orderNo: { $regex: orderNoReg } }, { title: { $regex: titleReg } }, { productCode: { $regex: productCodeReg } }]
+    }, (err, count) => {
       documentCount = err ? 0 : parseInt(count);
     });
-    console.log(2);
+
     let orderModel = __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */].find({
       $and: [//多条件，数组
       { orderNo: { $regex: orderNoReg } }, { title: { $regex: titleReg } }, { productCode: { $regex: productCodeReg } }]
     });
-    orderModel.sort({ "createDate": createDateSort }).skip((pageNum - 1) * pageSize).limit(parseInt(pageSize));
+    orderModel.sort({ "createDate": -1 }).skip((pageNum - 1) * pageSize).limit(parseInt(pageSize));
     orderModel.exec(function (err, res) {
       console.log(err);
       if (err) {
@@ -607,7 +624,28 @@ router.post('/query', async ctx => {
     ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]('获取数据成功', res);
   }).catch(err => {
     console.error(err);
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */](err ? err : "获取数据失败");
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */](err && err.message ? err.message : "获取数据失败");
+  });
+});
+
+// 插入订单
+router.post('/insert', async ctx => {
+  console.log(ctx.request.body.params);
+  let params = ctx.request.body.params ? JSON.parse(ctx.request.body.params) : {};
+  await new Promise(async function (resolve, reject) {
+    let orderModel = new __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */](params);
+    orderModel.save(function (err, res) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(res);
+      }
+    });
+  }).then(res => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["c" /* SuccessResult */]('插入数据成功');
+  }).catch(err => {
+    console.error(err);
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */](err && err.message ? err.message : "插入数据失败");
   });
 });
 
@@ -743,11 +781,7 @@ let Schema = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.Schema;
 let OrdersSchema = new Schema({
   'orderNo': {
     type: String,
-    required: true,
-    index: {
-      unique: true,
-      dropDups: true
-    } // 建立索引
+    required: true
   }, // "订单编号"
   'title': String, // "标题"
   'price': Number, // "价格"
@@ -759,8 +793,12 @@ let OrdersSchema = new Schema({
   'orderStatus': String, // "订单状态"
   'productCode': String, // "商家编码"
   'createDate': String, // "创建时间"
-  'platform': String // "所属平台"
+  'platform': String, // "所属平台"
+  'relativeOrder': Array // "关联订单"
 });
+
+// 建立索引
+OrdersSchema.index({ createDate: -1 });
 
 
 
