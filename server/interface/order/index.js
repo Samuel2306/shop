@@ -390,7 +390,6 @@ router.post('/query', async ctx => {
 
 // 插入订单
 router.post('/insert', async ctx => {
-  console.log(ctx.request.body.params)
   let params = ctx.request.body.params ? JSON.parse(ctx.request.body.params) : {}
   await new Promise(async function(resolve, reject){
     let orderModel = new OrdersModel(params)

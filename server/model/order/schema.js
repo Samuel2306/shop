@@ -4,7 +4,8 @@ let Schema = mongoose.Schema;
 let OrdersSchema = new Schema({
   'orderNo': {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },  // "订单编号"
   'title':  String, // "标题"
   'price':  Number, // "价格"

@@ -630,7 +630,6 @@ router.post('/query', async ctx => {
 
 // 插入订单
 router.post('/insert', async ctx => {
-  console.log(ctx.request.body.params);
   let params = ctx.request.body.params ? JSON.parse(ctx.request.body.params) : {};
   await new Promise(async function (resolve, reject) {
     let orderModel = new __WEBPACK_IMPORTED_MODULE_5__model_order_model__["a" /* OrdersModel */](params);
@@ -781,7 +780,8 @@ let Schema = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.Schema;
 let OrdersSchema = new Schema({
   'orderNo': {
     type: String,
-    required: true
+    required: true,
+    unique: true
   }, // "订单编号"
   'title': String, // "标题"
   'price': Number, // "价格"
