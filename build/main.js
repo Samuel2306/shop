@@ -1092,10 +1092,12 @@ router.post('/stockCheck', __WEBPACK_IMPORTED_MODULE_3__user__["a" /* checkToken
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_iconv_lite___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_iconv_lite__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__model__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__util__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__user__ = __webpack_require__(14);
 
 
 
 const path = __webpack_require__(2);
+
 
 
 
@@ -1211,7 +1213,7 @@ let router = __webpack_require__(1)();
 router.prefix('/api/v1/order');
 
 // 上传文件
-router.post('/upload', async ctx => {
+router.post('/upload', __WEBPACK_IMPORTED_MODULE_7__user__["a" /* checkToken */], async ctx => {
   // koa-body会将文件保存在request的files属性中
   let files = ctx.request.files;
   let platform = ctx.request.body.platform; // 'tb': 淘宝，'dy'：抖音
@@ -1322,7 +1324,7 @@ router.post('/upload', async ctx => {
 });
 
 // 查询订单
-router.post('/query', async ctx => {
+router.post('/query', __WEBPACK_IMPORTED_MODULE_7__user__["a" /* checkToken */], async ctx => {
   let pageSize = ctx.request.body.pageSize;
   let pageNum = ctx.request.body.pageNum;
   let orderNo = ctx.request.body.orderNo || ''; // 订单编号
@@ -1387,7 +1389,7 @@ router.post('/query', async ctx => {
 });
 
 // 插入订单
-router.post('/insert', async ctx => {
+router.post('/insert', __WEBPACK_IMPORTED_MODULE_7__user__["a" /* checkToken */], async ctx => {
   let params = ctx.request.body.params ? JSON.parse(ctx.request.body.params) : {};
   await new Promise(async function (resolve, reject) {
     let orderModel = new __WEBPACK_IMPORTED_MODULE_5__model__["a" /* OrdersModel */](params);

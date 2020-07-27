@@ -16,6 +16,9 @@ import {
   ErrorResult,
   Queue,
 } from '../../util'
+import {
+  checkToken
+} from "../user"
 
 OrdersModel.queue = new Queue(10)
 let tbAttrNames = [
@@ -133,7 +136,7 @@ let router = require('koa-router')();
 router.prefix('/api/v1/order')
 
 // 上传文件
-router.post('/upload', async ctx => {
+router.post('/upload', checkToken, async ctx => {
   // koa-body会将文件保存在request的files属性中
   let files = ctx.request.files
   let platform = ctx.request.body.platform   // 'tb': 淘宝，'dy'：抖音
@@ -248,7 +251,7 @@ router.post('/upload', async ctx => {
 })
 
 // 查询订单
-router.post('/query', async ctx => {
+router.post('/query', checkToken, async ctx => {
   let pageSize = ctx.request.body.pageSize
   let pageNum = ctx.request.body.pageNum
   let orderNo = ctx.request.body.orderNo || ''  // 订单编号
@@ -326,7 +329,7 @@ router.post('/query', async ctx => {
 
 
 // 插入订单
-router.post('/insert', async ctx => {
+router.post('/insert', checkToken, async ctx => {
   let params = ctx.request.body.params ? JSON.parse(ctx.request.body.params) : {}
   await new Promise(async function(resolve, reject){
     let orderModel = new OrdersModel(params)
