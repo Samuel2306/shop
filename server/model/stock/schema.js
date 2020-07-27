@@ -7,6 +7,9 @@ let StockSchema = new Schema({
     required: true,
     unique: true
   },  // "仓库单编号"*/
+  'relativeOrderNo':  {
+    type: String
+  }, // "关联订单号 出库单才有这个属性"
   'warehouseDocType':  {
     type: String,
     enum : ['0', '1'],
@@ -20,6 +23,7 @@ let StockSchema = new Schema({
     required: true
   }, // "仓库单类型： 0 进行中， 1 已完成"
   'productList':  Array, // "商品列表"
+  'datetime': String, // 入库时间
 });
 
 export {

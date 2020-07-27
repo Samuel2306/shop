@@ -1,4 +1,5 @@
 import {
+  ProductsModel,
   StocksModel, UsersModel
 } from '../../model'
 import {ErrorResult, SuccessResult} from "../../util";
@@ -106,6 +107,70 @@ router.post('/save',async (ctx)=>{
       ctx.body = new ErrorResult({
         code: '0001',
         msg: err && err.msg ? err.msg : "服务器错误"
+      })
+    })
+})
+
+
+
+// 查询单子
+router.post('/query',async (ctx)=>{
+  let pageSize = ctx.request.body.pageSize
+  let pageNum = ctx.request.body.pageNum
+  let relativeOrderNo = ctx.request.body.relativeOrderNo || ''
+  let datetime = ctx.request.body.datetime || ''
+  let warehouseDocType = ctx.request.body.warehouseDocType
+  let warehouseDocStatus = ctx.request.body.warehouseDocStatus
+
+  let relativeOrderNoReg = new RegExp(relativeOrderNo, 'i')
+
+  await new Promise(async function(resolve, reject){
+
+    let documentCount
+    await StocksModel.count({
+      $and : [ //多条件，数组
+        {warehouseDocType : warehouseDocType},
+        {relativeOrderNo : {$regex : relativeOrderNoReg}},
+      ]
+        .concat(warehouseDocStatus ? [{warehouseDocStatus: warehouseDocStatus}] : [])
+        .concat(datetime ? [{datetime: datetime}] : [])
+    }, (err, count) => {
+      documentCount = err ? 0 : parseInt(count)
+    })
+
+
+    let stockModel = StocksModel.find(
+      {
+        $and : [ //多条件，数组
+          {warehouseDocType : warehouseDocType},
+          {relativeOrderNo : {$regex : relativeOrderNoReg}},
+        ]
+          .concat(warehouseDocStatus ? [{warehouseDocStatus: warehouseDocStatus}] : [])
+          .concat(datetime ? [{datetime: datetime}] : [])
+      }
+    )
+    stockModel.skip((pageNum - 1) * pageSize).limit(parseInt(pageSize))
+    stockModel.exec(function (err, res) {
+      if (err) {
+        reject(err)
+      } else {
+        let data = {
+          total: documentCount,
+          data: res
+        }
+        resolve(data)
+      }
+    })
+  })
+    .then((res) => {
+      ctx.body = new SuccessResult({
+        msg: '获取数据成功',
+        data: res
+      })
+    })
+    .catch((err) => {
+      ctx.body = new ErrorResult({
+        msg: err ? err : "获取数据失败"
       })
     })
 })

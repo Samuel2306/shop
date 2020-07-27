@@ -1546,6 +1546,55 @@ router.post('/save', async ctx => {
   });
 });
 
+// 查询单子
+router.post('/query', async ctx => {
+  let pageSize = ctx.request.body.pageSize;
+  let pageNum = ctx.request.body.pageNum;
+  let relativeOrderNo = ctx.request.body.relativeOrderNo || '';
+  let datetime = ctx.request.body.datetime || '';
+  let warehouseDocType = ctx.request.body.warehouseDocType;
+  let warehouseDocStatus = ctx.request.body.warehouseDocStatus;
+
+  let relativeOrderNoReg = new RegExp(relativeOrderNo, 'i');
+
+  await new Promise(async function (resolve, reject) {
+
+    let documentCount;
+    await __WEBPACK_IMPORTED_MODULE_0__model__["c" /* StocksModel */].count({
+      $and: [//多条件，数组
+      { warehouseDocType: warehouseDocType }, { relativeOrderNo: { $regex: relativeOrderNoReg } }].concat(warehouseDocStatus ? [{ warehouseDocStatus: warehouseDocStatus }] : []).concat(datetime ? [{ datetime: datetime }] : [])
+    }, (err, count) => {
+      documentCount = err ? 0 : parseInt(count);
+    });
+
+    let stockModel = __WEBPACK_IMPORTED_MODULE_0__model__["c" /* StocksModel */].find({
+      $and: [//多条件，数组
+      { warehouseDocType: warehouseDocType }, { relativeOrderNo: { $regex: relativeOrderNoReg } }].concat(warehouseDocStatus ? [{ warehouseDocStatus: warehouseDocStatus }] : []).concat(datetime ? [{ datetime: datetime }] : [])
+    });
+    stockModel.skip((pageNum - 1) * pageSize).limit(parseInt(pageSize));
+    stockModel.exec(function (err, res) {
+      if (err) {
+        reject(err);
+      } else {
+        let data = {
+          total: documentCount,
+          data: res
+        };
+        resolve(data);
+      }
+    });
+  }).then(res => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_1__util__["c" /* SuccessResult */]({
+      msg: '获取数据成功',
+      data: res
+    });
+  }).catch(err => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_1__util__["a" /* ErrorResult */]({
+      msg: err ? err : "获取数据失败"
+    });
+  });
+});
+
 /* harmony default export */ __webpack_exports__["a"] = (router);
 
 /***/ }),
@@ -1635,6 +1684,9 @@ let StockSchema = new Schema({
     required: true,
     unique: true
   },  // "仓库单编号"*/
+  'relativeOrderNo': {
+    type: String
+  }, // "关联订单号 出库单才有这个属性"
   'warehouseDocType': {
     type: String,
     enum: ['0', '1'],
@@ -1647,7 +1699,8 @@ let StockSchema = new Schema({
     default: '0',
     required: true
   }, // "仓库单类型： 0 进行中， 1 已完成"
-  'productList': Array // "商品列表"
+  'productList': Array, // "商品列表"
+  'datetime': String // 入库时间
 });
 
 
