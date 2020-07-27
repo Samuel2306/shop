@@ -3,9 +3,12 @@ import fs from "fs";
 const path = require('path')
 import xlsx2json from "node-xlsx";
 import {
-  OrdersModel,
   ProductsModel,
 } from '../../model'
+import {
+  checkToken
+} from "../user"
+
 import {
   SuccessResult,
   ErrorResult,
@@ -63,7 +66,7 @@ function fileDataConvert(products, productAttrs){
 
 
 // 上传文件
-router.post('/upload', async ctx => {
+router.post('/upload', checkToken, async ctx => {
   // koa-body会将文件保存在request的files属性中
   let files = ctx.request.files
   if(!files || !files.files ){
@@ -130,7 +133,7 @@ router.post('/upload', async ctx => {
 })
 
 // 查询商品数据
-router.post('/query', async ctx => {
+router.post('/query', checkToken, async ctx => {
   let pageSize = ctx.request.body.pageSize
   let pageNum = ctx.request.body.pageNum
   let productName = ctx.request.body.productName || '' // 商品名称
@@ -206,7 +209,7 @@ router.post('/query', async ctx => {
 
 
 // 插入商品
-router.post('/insert', async ctx => {
+router.post('/insert', checkToken, async ctx => {
   let params = ctx.request.body.params ? JSON.parse(ctx.request.body.params) : {}
   await new Promise(async function(resolve, reject){
     let productModel = new ProductsModel(params)
@@ -242,7 +245,7 @@ router.post('/insert', async ctx => {
 
 
 // 编辑商品
-router.post('/update', async ctx => {
+router.post('/update', checkToken, async ctx => {
   let params = ctx.request.body.params ? JSON.parse(ctx.request.body.params) : {}
   let productCode = params.productCode
   if(!productCode){
@@ -278,7 +281,7 @@ router.post('/update', async ctx => {
 
 
 // 商品库存检查，是否有商品在预警库存以下
-router.post('/stockCheck', async ctx => {
+router.post('/stockCheck', checkToken, async ctx => {
   await new Promise(async function(resolve, reject){
     let productModel = ProductsModel.find({})
     productModel.$where('this.stock < this.warningStock')

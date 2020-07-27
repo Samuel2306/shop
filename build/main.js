@@ -354,7 +354,7 @@ module.exports = require("koa-body");
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
-  user: __WEBPACK_IMPORTED_MODULE_0__user__["a" /* default */],
+  user: __WEBPACK_IMPORTED_MODULE_0__user__["b" /* default */],
   product: __WEBPACK_IMPORTED_MODULE_1__product__["a" /* default */],
   order: __WEBPACK_IMPORTED_MODULE_2__order__["a" /* default */],
   stock: __WEBPACK_IMPORTED_MODULE_3__stock__["a" /* default */]
@@ -365,6 +365,7 @@ module.exports = require("koa-body");
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return checkToken; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__model__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_jsonwebtoken__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_jsonwebtoken___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_jsonwebtoken__);
@@ -390,24 +391,25 @@ function createToken(username) {
 
 const checkToken = async (ctx, next) => {
   let token = ctx.request.body.token;
-  if (token === '') {
+  if (!token) {
     ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
       code: '0016',
       msg: '缺少用户token'
     });
+    return;
   }
 
   // 检验 token 是否已过期
   try {
+
     await __WEBPACK_IMPORTED_MODULE_1_jsonwebtoken___default.a.verify(token, 'cedric1990');
+    await next();
   } catch (err) {
     ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
       code: '0014',
-      msg: '用户过期'
+      msg: 'token无效'
     });
   }
-
-  await next();
 };
 
 let router = __WEBPACK_IMPORTED_MODULE_2_koa_router___default()();
@@ -537,13 +539,15 @@ router.post('/register', async ctx => {
   });
 });
 
-/*router.post('/check', checkToken, async (ctx)=>{
-  ctx.body = new SuccessResult({
+router.post('/check', checkToken, async ctx => {
+  ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["c" /* SuccessResult */]({
     msg: '用户'
   });
-})*/
+});
 
-/* harmony default export */ __webpack_exports__["a"] = (router);
+
+
+/* harmony default export */ __webpack_exports__["b"] = (router);
 
 /***/ }),
 /* 15 */
@@ -714,7 +718,7 @@ let resultCodeMap = {
   'WL-0006': "参数缺失",
   'WL-0008': "用户没有权限",
   'WL-0010': "文件重复上传",
-  'WL-0014': "用户过期",
+  'WL-0014': "token无效 | 用户过期",
   'WL-0016': "用户信息缺失"
 };
 
@@ -795,8 +799,9 @@ class Queue {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_node_xlsx__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_node_xlsx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_node_xlsx__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__util__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__utils_utils__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__user__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__util__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__utils_utils__ = __webpack_require__(7);
 
 
 const path = __webpack_require__(2);
@@ -805,7 +810,9 @@ const path = __webpack_require__(2);
 
 
 
-__WEBPACK_IMPORTED_MODULE_2__model__["b" /* ProductsModel */].queue = new __WEBPACK_IMPORTED_MODULE_3__util__["b" /* Queue */](10);
+
+
+__WEBPACK_IMPORTED_MODULE_2__model__["b" /* ProductsModel */].queue = new __WEBPACK_IMPORTED_MODULE_4__util__["b" /* Queue */](10);
 
 let router = __webpack_require__(1)();
 // 设置模块名为接口前缀
@@ -837,8 +844,8 @@ function fileDataConvert(products, productAttrs) {
     productAttrs.forEach((attr, idx) => {
       let val = item[idx];
       if (val) {
-        val = Object(__WEBPACK_IMPORTED_MODULE_4__utils_utils__["c" /* replaceAll */])(val, '=\"', "");
-        obj[attr] = Object(__WEBPACK_IMPORTED_MODULE_4__utils_utils__["c" /* replaceAll */])(val, '\"', "");
+        val = Object(__WEBPACK_IMPORTED_MODULE_5__utils_utils__["c" /* replaceAll */])(val, '=\"', "");
+        obj[attr] = Object(__WEBPACK_IMPORTED_MODULE_5__utils_utils__["c" /* replaceAll */])(val, '\"', "");
       } else {
         obj[attr] = val;
       }
@@ -849,11 +856,11 @@ function fileDataConvert(products, productAttrs) {
 }
 
 // 上传文件
-router.post('/upload', async ctx => {
+router.post('/upload', __WEBPACK_IMPORTED_MODULE_3__user__["a" /* checkToken */], async ctx => {
   // koa-body会将文件保存在request的files属性中
   let files = ctx.request.files;
   if (!files || !files.files) {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
       msg: "请选择相应文件进行上传",
       code: '0006'
     });
@@ -867,9 +874,9 @@ router.post('/upload', async ctx => {
     let currentFile = res[i];
 
     /*文件格式验证*/
-    if (!Object(__WEBPACK_IMPORTED_MODULE_4__utils_utils__["b" /* checkExcelType */])(currentFile)) {
+    if (!Object(__WEBPACK_IMPORTED_MODULE_5__utils_utils__["b" /* checkExcelType */])(currentFile)) {
       return {
-        body: new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]("请上传Excel文件"),
+        body: new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]("请上传Excel文件"),
         flag: false
       };
     }
@@ -895,15 +902,15 @@ router.post('/upload', async ctx => {
     });
   }).then(res => {
     // ctx.body = orders
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["c" /* SuccessResult */]({
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["c" /* SuccessResult */]({
       msg: "插入商品数据成功"
     });
   }).catch(err => {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
       msg: err ? err : "导入数据失败"
     });
 
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
       code: err && err.code == 11000 ? '0002' : '0001',
       msg: err && err.code == 11000 ? '插入部分商品的商品编号已存在' : "服务器错误"
     });
@@ -911,7 +918,7 @@ router.post('/upload', async ctx => {
 });
 
 // 查询商品数据
-router.post('/query', async ctx => {
+router.post('/query', __WEBPACK_IMPORTED_MODULE_3__user__["a" /* checkToken */], async ctx => {
   let pageSize = ctx.request.body.pageSize;
   let pageNum = ctx.request.body.pageNum;
   let productName = ctx.request.body.productName || ''; // 商品名称
@@ -919,14 +926,14 @@ router.post('/query', async ctx => {
   let stock = ctx.request.body.stock || ''; // 库存
 
   if (!pageSize) {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
       code: '0006',
       msg: "缺少pageSize参数"
     });
     return;
   }
   if (!pageNum) {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
       code: '0006',
       msg: "缺少pageNum参数"
     });
@@ -963,19 +970,19 @@ router.post('/query', async ctx => {
       }
     });
   }).then(res => {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["c" /* SuccessResult */]({
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["c" /* SuccessResult */]({
       msg: '获取商品数据成功',
       data: res
     });
   }).catch(err => {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
       msg: err ? err : "获取商品数据失败"
     });
   });
 });
 
 // 插入商品
-router.post('/insert', async ctx => {
+router.post('/insert', __WEBPACK_IMPORTED_MODULE_3__user__["a" /* checkToken */], async ctx => {
   let params = ctx.request.body.params ? JSON.parse(ctx.request.body.params) : {};
   await new Promise(async function (resolve, reject) {
     let productModel = new __WEBPACK_IMPORTED_MODULE_2__model__["b" /* ProductsModel */](params);
@@ -987,7 +994,7 @@ router.post('/insert', async ctx => {
       }
     });
   }).then(res => {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["c" /* SuccessResult */]({
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["c" /* SuccessResult */]({
       msg: '插入商品成功'
     });
   }).catch(err => {
@@ -998,7 +1005,7 @@ router.post('/insert', async ctx => {
         propName = prop;
       }
     }
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
       code: err && err.code == 11000 ? '0002' : '0001',
       msg: err && err.code == 11000 ? '已存在相同商品编号的商品' : "服务器错误"
     });
@@ -1006,11 +1013,11 @@ router.post('/insert', async ctx => {
 });
 
 // 编辑商品
-router.post('/update', async ctx => {
+router.post('/update', __WEBPACK_IMPORTED_MODULE_3__user__["a" /* checkToken */], async ctx => {
   let params = ctx.request.body.params ? JSON.parse(ctx.request.body.params) : {};
   let productCode = params.productCode;
   if (!productCode) {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
       code: '0006',
       msg: "缺少商品编码（productCode）参数"
     });
@@ -1025,11 +1032,11 @@ router.post('/update', async ctx => {
       }
     });
   }).then(res => {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["c" /* SuccessResult */]({
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["c" /* SuccessResult */]({
       msg: '编辑商品成功'
     });
   }).catch(err => {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
       code: '0001',
       msg: "服务器错误"
     });
@@ -1037,7 +1044,7 @@ router.post('/update', async ctx => {
 });
 
 // 商品库存检查，是否有商品在预警库存以下
-router.post('/stockCheck', async ctx => {
+router.post('/stockCheck', __WEBPACK_IMPORTED_MODULE_3__user__["a" /* checkToken */], async ctx => {
   await new Promise(async function (resolve, reject) {
     let productModel = __WEBPACK_IMPORTED_MODULE_2__model__["b" /* ProductsModel */].find({});
     productModel.$where('this.stock < this.warningStock');
@@ -1054,12 +1061,12 @@ router.post('/stockCheck', async ctx => {
       }
     });
   }).then(res => {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["c" /* SuccessResult */]({
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["c" /* SuccessResult */]({
       msg: '获取库存预警数据成功',
       data: res
     });
   }).catch(err => {
-    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
       code: '0001',
       msg: "服务器错误"
     });

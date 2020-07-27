@@ -1,5 +1,4 @@
 import {
-  ProductsModel,
   UsersModel,
 } from '../../model'
 import jwt from 'jsonwebtoken'
@@ -26,24 +25,25 @@ function createToken(username){
 
 const checkToken = async (ctx, next) => {
   let token = ctx.request.body.token
-  if (token === '') {
+  if (!token) {
     ctx.body = new ErrorResult({
       code: '0016',
       msg: '缺少用户token',
     });
+    return
   }
 
   // 检验 token 是否已过期
   try {
+
     await jwt.verify(token, 'cedric1990')
+    await next()
   } catch (err) {
     ctx.body = new ErrorResult({
       code: '0014',
-      msg: '用户过期',
+      msg: 'token无效',
     });
   }
-
-  await next()
 }
 
 
@@ -182,11 +182,14 @@ router.post('/register', async (ctx)=>{
     })
 })
 
-
-/*router.post('/check', checkToken, async (ctx)=>{
+router.post('/check', checkToken, async (ctx)=>{
   ctx.body = new SuccessResult({
     msg: '用户'
   });
-})*/
+})
+
+export {
+  checkToken
+}
 
 export default router
