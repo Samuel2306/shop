@@ -891,6 +891,37 @@ router.post('/insert', async ctx => {
   });
 });
 
+// 编辑商品
+router.post('/update', async ctx => {
+  let params = ctx.request.body.params ? JSON.parse(ctx.request.body.params) : {};
+  let productCode = params.productCode;
+  if (!productCode) {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+      code: '0006',
+      msg: "缺少商品编码（productCode）参数"
+    });
+  }
+  await new Promise(async function (resolve, reject) {
+    //第一个参数为查找，第二个为要修改的字段
+    __WEBPACK_IMPORTED_MODULE_2__model__["b" /* ProductsModel */].updateOne({ "productCode": productCode }, params, function (err, doc) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(doc);
+      }
+    });
+  }).then(res => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["c" /* SuccessResult */]({
+      msg: '编辑商品成功'
+    });
+  }).catch(err => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+      code: '0001',
+      msg: "服务器错误"
+    });
+  });
+});
+
 /* harmony default export */ __webpack_exports__["a"] = (router);
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, "server/interface/product"))
 

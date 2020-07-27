@@ -240,4 +240,39 @@ router.post('/insert', async ctx => {
     })
 })
 
+
+// 编辑商品
+router.post('/update', async ctx => {
+  let params = ctx.request.body.params ? JSON.parse(ctx.request.body.params) : {}
+  let productCode = params.productCode
+  if(!productCode){
+    ctx.body = new ErrorResult({
+      code: '0006',
+      msg: "缺少商品编码（productCode）参数"
+    })
+  }
+  await new Promise(async function(resolve, reject){
+    //第一个参数为查找，第二个为要修改的字段
+    ProductsModel.updateOne({"productCode": productCode}, params ,function (err, doc) {
+      if (err) {
+        reject(err)
+      }
+      else {
+        resolve(doc)
+      }
+    })
+  })
+    .then((res) => {
+      ctx.body = new SuccessResult({
+        msg: '编辑商品成功'
+      })
+    })
+    .catch((err) => {
+      ctx.body = new ErrorResult({
+        code: '0001',
+        msg: "服务器错误"
+      })
+    })
+})
+
 export default router
