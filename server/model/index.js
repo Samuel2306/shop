@@ -9,9 +9,13 @@ import {
 import {
   UsersModel
 } from './user/model'
+import {
+  StocksModel
+} from './stock/model'
 
 export {
   OrdersModel,
   ProductsModel,
   UsersModel,
+  StocksModel,
 }

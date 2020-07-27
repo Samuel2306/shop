@@ -91,9 +91,12 @@ module.exports = require("path");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__order_model__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__product_model__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__user_model__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__stock_model__ = __webpack_require__(33);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_0__order_model__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_1__product_model__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_2__user_model__["a"]; });
+/* unused harmony reexport StocksModel */
+
 
 
 
@@ -1439,6 +1442,9 @@ module.exports = require("iconv-lite");
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__model__ = __webpack_require__(3);
+
+
 let router = __webpack_require__(1)();
 // 设置模块名为接口前缀
 router.prefix('/api/v1/stock');
@@ -1501,6 +1507,52 @@ module.exports = {
 /***/ (function(module, exports) {
 
 module.exports = require("bcryptjs");
+
+/***/ }),
+/* 33 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* unused harmony export StocksModel */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__schema__ = __webpack_require__(34);
+
+
+
+let StocksModel = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.model('stock', __WEBPACK_IMPORTED_MODULE_1__schema__["a" /* StockSchema */]);
+
+
+
+/***/ }),
+/* 34 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return StockSchema; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
+
+let Schema = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.Schema;
+
+let StockSchema = new Schema({
+  'warehouseDocCode': {
+    type: String,
+    required: true,
+    unique: true
+  }, // "仓库单编号"
+  'warehouseDocType': {
+    type: Number,
+    required: true
+  }, // "仓库单类型： 0 入库单， 1 出库单"
+  'warehouseDocStatus': {
+    type: Number,
+    required: true
+  }, // "仓库单类型： 0 进行中， 1 已完成"
+  'productList': Array // "商品列表"
+});
+
+
 
 /***/ })
 /******/ ]);
