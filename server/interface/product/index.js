@@ -23,7 +23,7 @@ let router = require('koa-router')();
 router.prefix('/api/v1/product')
 
 
-let productAttrNames = ['productCode', 'productName', 'price', 'stock']
+let productAttrNames = ['productCode', 'productName', 'price', 'stock', 'warningStock']
 
 
 function delDir(path, callback){
@@ -274,5 +274,42 @@ router.post('/update', async ctx => {
       })
     })
 })
+
+
+
+// 商品库存检查，是否有商品在预警库存以下
+router.post('/stockCheck', async ctx => {
+  await new Promise(async function(resolve, reject){
+    let productModel = ProductsModel.find({})
+    productModel.$where('this.stock < this.warningStock')
+    productModel.exec(function (err, res) {
+      console.log(err)
+      if (err) {
+        reject(err)
+      }
+      else {
+        let data = {
+          total: res.length,
+          data: res
+        }
+        resolve(data)
+      }
+    })
+  })
+    .then((res) => {
+      ctx.body = new SuccessResult({
+        msg: '获取库存预警数据成功',
+        data: res
+      })
+    })
+    .catch((err) => {
+      ctx.body = new ErrorResult({
+        code: '0001',
+        msg: "服务器错误"
+      })
+    })
+})
+
+
 
 export default router

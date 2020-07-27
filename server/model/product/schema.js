@@ -14,6 +14,7 @@ let ProductSchema = new Schema({
   }, // "商品名称"
   'price':  Number, // "价格"
   'stock':  Number, // "库存数量"
+  'warningStock':  Number, // "预警库存数量"
 });
 
 export {

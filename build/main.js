@@ -524,7 +524,8 @@ let ProductSchema = new Schema({
     unique: true
   }, // "商品名称"
   'price': Number, // "价格"
-  'stock': Number // "库存数量"
+  'stock': Number, // "库存数量"
+  'warningStock': Number // "预警库存数量"
 });
 
 
@@ -697,7 +698,7 @@ let router = __webpack_require__(1)();
 // 设置模块名为接口前缀
 router.prefix('/api/v1/product');
 
-let productAttrNames = ['productCode', 'productName', 'price', 'stock'];
+let productAttrNames = ['productCode', 'productName', 'price', 'stock', 'warningStock'];
 
 function delDir(path, callback) {
   let files = [];
@@ -913,6 +914,36 @@ router.post('/update', async ctx => {
   }).then(res => {
     ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["c" /* SuccessResult */]({
       msg: '编辑商品成功'
+    });
+  }).catch(err => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+      code: '0001',
+      msg: "服务器错误"
+    });
+  });
+});
+
+// 商品库存检查，是否有商品在预警库存以下
+router.post('/stockCheck', async ctx => {
+  await new Promise(async function (resolve, reject) {
+    let productModel = __WEBPACK_IMPORTED_MODULE_2__model__["b" /* ProductsModel */].find({});
+    productModel.$where('this.stock < this.warningStock');
+    productModel.exec(function (err, res) {
+      console.log(err);
+      if (err) {
+        reject(err);
+      } else {
+        let data = {
+          total: res.length,
+          data: res
+        };
+        resolve(data);
+      }
+    });
+  }).then(res => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["c" /* SuccessResult */]({
+      msg: '获取库存预警数据成功',
+      data: res
     });
   }).catch(err => {
     ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
