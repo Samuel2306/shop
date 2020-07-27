@@ -759,7 +759,7 @@ router.post('/upload', async ctx => {
         flag: false
       };
     }
-
+    let path = currentFile.path || '';
     let excelData = __WEBPACK_IMPORTED_MODULE_1_node_xlsx___default.a.parse(path);
     let dataList = fileDataConvert(excelData[0].data, productAttrNames);
     __WEBPACK_IMPORTED_MODULE_2__model__["b" /* ProductsModel */].queue.add(currentFile.name);

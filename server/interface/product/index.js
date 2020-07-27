@@ -86,7 +86,7 @@ router.post('/upload', async ctx => {
         flag: false
       }
     }
-
+    let path = currentFile.path || ''
     let excelData = xlsx2json.parse(path)
     let dataList = fileDataConvert(excelData[0].data, productAttrNames)
     ProductsModel.queue.add(currentFile.name)
