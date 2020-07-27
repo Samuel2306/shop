@@ -1,6 +1,7 @@
 import {
   checkExcelType,
   checkCSVType,
+  replaceAll,
 } from '../../../utils/utils'
 import fs from 'fs'
 import moment from 'moment'
@@ -14,7 +15,6 @@ import {
   SuccessResult,
   ErrorResult,
   Queue,
-  replaceAll,
 } from '../../util'
 
 OrdersModel.queue = new Queue(10)
@@ -44,6 +44,7 @@ let dyAttrNames = [
   'productCode', // "商家编码"
   'createDate', // "创建时间"
 ]
+
 
 function delDir(path, callback){
   let files = [];
@@ -125,80 +126,6 @@ function fileDataConvert(orders, orderAttrs, platform, createDate){
   return orders
 }
 
-/*验证文件数据是否重复*/
-function validateData(data, nums, all){
-  let flags = []
-  let promiseList = []
-  if(all){
-    for (let i = 0; i < nums; i++) {
-      promiseList.push(new Promise(function(resolve, reject){
-        OrdersModel.findOne({"orderNo": data[i].orderNo}, function (err, order) {
-          if(err) {
-            console.log("查找出错")
-            resolve(true)
-          }
-          if(order){
-            resolve(false)
-          }else{
-            resolve(true)
-          }
-
-          resolve()
-        })
-      }))
-    }
-  }else{
-    let indexs = []
-    while(indexs.length < nums){
-      let randomNum = Math.floor(Math.random() * data.length);
-      if(indexs.indexOf(randomNum) < 0){
-        indexs.push(randomNum)
-      }
-    }
-    for(let j = 0; j < indexs.length; j++){
-      let index = indexs[j]
-      promiseList.push(new Promise(function(resolve, reject){
-        OrdersModel.findOne({"orderNo": data[index].orderNo}, function (err, order) {
-          if(err) {
-            console.log("查找出错")
-            resolve(true)
-          }
-
-          if(order){
-            resolve(false)
-          }else{
-            resolve(true)
-          }
-        })
-      }))
-    }
-
-    return Promise.all(promiseList,(list) => {
-      return list
-    })
-  }
-}
-
-async function fileContentValidate(orders){
-  /*对数据重复性进行验证,随机抽样一定的数据看，看是否是同一个文件*/
-  let contentFlag = true
-  let list = []
-  if(orders.length < 5){
-    list = await validateData(orders, orders.length, true)
-  }else if(orders.length < 50){
-    list = await validateData(orders, 5)
-  }else if(Math.ceil(orders.length / 10) < 10){
-    list = await validateData(orders, Math.ceil(orders.length / 10))
-  }else{
-    list = await validateData(orders, 10)
-  }
-  contentFlag = list.every((item) => {
-    return item
-  })
-  return contentFlag
-  /*对数据重复性进行验证*/
-}
-
 
 
 let router = require('koa-router')();
@@ -240,17 +167,8 @@ router.post('/upload', async ctx => {
     if(checkExcelType(res[i])){
       let excelData = xlsx2json.parse(path)
       let dataList = fileDataConvert(excelData[0].data, orderAttrs, platform, createDate)
-      let flag = await fileContentValidate(dataList)
-      if(flag){
-        OrdersModel.queue.add(currentFile.name)
-        orders = orders.concat(dataList)
-      }else{
-        ctx.body = new ErrorResult({
-          msg: "请勿重复上传数据相同的文件",
-          code: '0010'
-        })
-        return
-      }
+      OrdersModel.queue.add(currentFile.name)
+      orders = orders.concat(dataList)
     }else if(checkCSVType(res[i])){
       let buffer = fs.readFileSync(path)
       let charset = ''
@@ -268,20 +186,9 @@ router.post('/upload', async ctx => {
         res.forEach((item,index) => {
           res[index] = item.split(',')
         })
-
-
         let dataList = fileDataConvert(res, orderAttrs, platform, createDate)
-        let flag = await fileContentValidate(dataList)
-        if(flag){
-          OrdersModel.queue.add(currentFile.name)
-          orders = orders.concat(dataList)
-        }else{
-          ctx.body = new ErrorResult({
-            msg: "请勿重复上传文件",
-            code: '0010'
-          })
-          return
-        }
+        OrdersModel.queue.add(currentFile.name)
+        orders = orders.concat(dataList)
       } catch (e) {
         console.log(e)
       }
@@ -321,14 +228,21 @@ router.post('/upload', async ctx => {
     })
   })
     .then((res) => {
-      // ctx.body = orders
       ctx.body = new SuccessResult({
         msg: "插入数据成功"
       })
     })
     .catch((err) => {
+      let propName = ''
+      if(err && err.code == 11000){
+        let keyValue = err["keyValue"]
+        for (let prop in keyValue) {
+          propName = prop
+        }
+      }
       ctx.body = new ErrorResult({
-        msg: err ? err : "导入数据失败"
+        code: err && err.code == 11000 ? '0002' : '0001',
+        msg: err && err.code == 11000 ? '导入的部分订单的订单编号已存在' : '服务器错误'
       })
     })
 })
@@ -405,7 +319,7 @@ router.post('/query', async ctx => {
     })
     .catch((err) => {
       ctx.body = new ErrorResult({
-        msg: err ? err : "获取数据失败"
+        msg: err ? err : "导入数据失败"
       })
     })
 })
@@ -440,8 +354,8 @@ router.post('/insert', async ctx => {
         }
       }
       ctx.body = new ErrorResult({
-        code: err && err.code == 11000 ? '0002' : '',
-        msg: propName ? '插入数据的' + propName + '属性必须保持唯一性' : "插入数据失败"
+        code: err && err.code == 11000 ? '0002' : '0001',
+        msg: err && err.code == 11000 ? '已存在相同订单编号的订单' : "服务器错误"
       })
     })
 })

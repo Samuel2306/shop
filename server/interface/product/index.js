@@ -1,25 +1,70 @@
+import fs from "fs";
+
+const path = require('path')
+import xlsx2json from "node-xlsx";
 import {
   ProductsModel,
 } from '../../model'
+import {
+  SuccessResult,
+  ErrorResult,
+  Queue,
+} from '../../util'
+import {
+  checkExcelType,
+  replaceAll,
+} from '../../../utils/utils'
+
+ProductsModel.queue = new Queue(10)
+
 let router = require('koa-router')();
 // 设置模块名为接口前缀
 router.prefix('/api/v1/product')
-router.get('/aaa',async (ctx)=>{
-  ctx.body="首页";
-})
+
+
+let productAttrNames = ['productCode', 'productName', 'price', 'stock']
+
+
+function delDir(path, callback){
+  let files = [];
+  if(fs.existsSync(path)){
+    files = fs.readdirSync(path);
+    files.forEach((file, index) => {
+      let curPath = path + "/" + file;
+      if(fs.statSync(curPath).isDirectory()){
+        delDir(curPath); //递归删除文件夹
+      } else {
+        fs.unlinkSync(curPath); //删除文件
+      }
+    });
+    // fs.rmdirSync(path);
+  }
+  callback && callback()
+}
+
+// 格式化商品数据
+function fileDataConvert(products, productAttrs){
+  products = products.slice(1).map((item) => {
+    let obj = {}
+    productAttrs.forEach((attr, idx) => {
+      let val = item[idx]
+      if(val){
+        val = replaceAll(val, '=\"', "")
+        obj[attr] = replaceAll(val, '\"', "")
+      }else{
+        obj[attr] = val
+      }
+    })
+    return obj
+  })
+  return products
+}
 
 
 // 上传文件
 router.post('/upload', async ctx => {
   // koa-body会将文件保存在request的files属性中
   let files = ctx.request.files
-  let platform = ctx.request.body.platform   // 'tb': 淘宝，'dy'：抖音
-  let orderAttrs = platform == 'tb' ? tbAttrNames : dyAttrNames
-  let createDate = ctx.request.body.createDate
-  let clearQueue = ctx.request.body.clearQueue || false
-
-  // console.log(files)
-
   if(!files || !files.files ){
     ctx.body = new ErrorResult({
       msg: "请选择相应文件进行上传",
@@ -30,66 +75,22 @@ router.post('/upload', async ctx => {
 
   // files是接口定义的用来代表上传文件的属性，上传单个文件时files.files是File类型，多个文件files.files是数组
   let res = Array.isArray(files.files) ? files.files : [files.files]
-  let orders = []
+  let products = []
   for(let i = 0; i < res.length; i++){
     let currentFile = res[i]
 
-    let valid = validateFile(currentFile, clearQueue)
-    if(!valid.flag){
-      ctx.body = valid.body
-      return
-    }
-
-    let path = currentFile.path || ''
-    if(checkExcelType(res[i])){
-      let excelData = xlsx2json.parse(path)
-      let dataList = fileDataConvert(excelData[0].data, orderAttrs, platform, createDate)
-      let flag = await fileContentValidate(dataList)
-      if(flag){
-        OrdersModel.queue.add(currentFile.name)
-        orders = orders.concat(dataList)
-      }else{
-        ctx.body = new ErrorResult({
-          msg: "请勿重复上传数据相同的文件",
-          code: '0010'
-        })
-        return
-      }
-    }else if(checkCSVType(res[i])){
-      let buffer = fs.readFileSync(path)
-      let charset = ''
-      if((buffer[0] == 0xff && buffer[1] == 0xfe) || (buffer[0] == 0xfe && buffer[1] == 0xff)){
-        charset = 'unicode'
-      }else if(buffer[0] == 0xef && buffer[1] == 0xbb){
-        charset = 'utf8'
-      }else{
-        charset = 'gbk'
-      }
-      try {
-        let fileData = fs.readFileSync(path)
-        let res = iconv_lite.decode(fileData, charset)
-        res = res.split("\n")
-        res.forEach((item,index) => {
-          res[index] = item.split(',')
-        })
-
-
-        let dataList = fileDataConvert(res, orderAttrs, platform, createDate)
-        let flag = await fileContentValidate(dataList)
-        if(flag){
-          OrdersModel.queue.add(currentFile.name)
-          orders = orders.concat(dataList)
-        }else{
-          ctx.body = new ErrorResult({
-            msg: "请勿重复上传文件",
-            code: '0010'
-          })
-          return
-        }
-      } catch (e) {
-        console.log(e)
+    /*文件格式验证*/
+    if(!checkExcelType(currentFile)){
+      return {
+        body: new ErrorResult("请上传Excel文件"),
+        flag: false
       }
     }
+
+    let excelData = xlsx2json.parse(path)
+    let dataList = fileDataConvert(excelData[0].data, productAttrNames)
+    ProductsModel.queue.add(currentFile.name)
+    products = products.concat(dataList)
   }
 
 
@@ -99,24 +100,9 @@ router.post('/upload', async ctx => {
   delDir(uploadDir)
   /*删除换存在服务器的文件*/
 
-  // 淘宝数据存在多条数据属于一个订单的情况
-  let obj = {}
-  let idx = []
-  orders.forEach((order, index) => {
-    if(!obj[order.orderNo]){
-      obj[order.orderNo] = order
-      order.relativeOrder = []
-    }else{
-      obj[order.orderNo].relativeOrder.push(order)
-      idx.push(index)
-    }
-  })
-  for (let i = idx.length - 1; i >= 0; i--) {
-    orders.splice(idx[i], 1)
-  }
 
   await new Promise(function(resolve, reject){
-    OrdersModel.create(orders, function (err, res) {
+    ProductsModel.create(products, function (err, res) {
       if (err) {
         reject(err)
       } else {
@@ -127,12 +113,17 @@ router.post('/upload', async ctx => {
     .then((res) => {
       // ctx.body = orders
       ctx.body = new SuccessResult({
-        msg: "插入数据成功"
+        msg: "插入商品数据成功"
       })
     })
     .catch((err) => {
       ctx.body = new ErrorResult({
         msg: err ? err : "导入数据失败"
+      })
+
+      ctx.body = new ErrorResult({
+        code: err && err.code == 11000 ? '0002' : '0001',
+        msg: err && err.code == 11000 ? '插入部分商品的商品编号已存在' : "服务器错误"
       })
     })
 })
