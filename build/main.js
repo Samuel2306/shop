@@ -93,7 +93,7 @@ module.exports = require("path");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__user_model__ = __webpack_require__(19);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_0__order_model__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_1__product_model__["a"]; });
-/* unused harmony reexport UsersModel */
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_2__user_model__["a"]; });
 
 
 
@@ -122,10 +122,16 @@ module.exports = require("path");
 /* 5 */
 /***/ (function(module, exports) {
 
-module.exports = require("node-xlsx");
+module.exports = require("fs");
 
 /***/ }),
 /* 6 */
+/***/ (function(module, exports) {
+
+module.exports = require("node-xlsx");
+
+/***/ }),
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -209,12 +215,6 @@ const replaceAll = function (str, oldContent, newContent) {
 };
 
 
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports) {
-
-module.exports = require("fs");
 
 /***/ }),
 /* 8 */
@@ -368,10 +368,10 @@ module.exports = require("koa-body");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__model__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_jsonwebtoken__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_jsonwebtoken___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_jsonwebtoken__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_jwt_autorefresh__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_jwt_autorefresh___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_jwt_autorefresh__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_koa_router__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_koa_router___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_koa_router__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_koa_router__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_koa_router___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_koa_router__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_bcryptjs__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_bcryptjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_bcryptjs__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__util__ = __webpack_require__(4);
 
 
@@ -383,53 +383,165 @@ function createToken(username) {
   const token = __WEBPACK_IMPORTED_MODULE_1_jsonwebtoken___default.a.sign({
     id: username
   }, 'cedric1990', {
-    expiresIn: '30s'
+    expiresIn: '86400s'
   });
   return token;
 }
 
 const checkToken = async (ctx, next) => {
-  // 检验是否存在 token, axios.js 设置 authorization
-  /*const authorization = ctx.get('Authorization')
-  if (authorization === '') {
-    ctx.throw(401, 'no token detected in http headerAuthorization')
-  }
-   const token = authorization.split(' ')[1]*/
-
   let token = ctx.request.body.token;
   if (token === '') {
-    console.log("no token detected in http headerAuthorization");
-    ctx.throw(401, 'no token detected in http headerAuthorization');
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
+      code: '0016',
+      msg: '缺少用户token'
+    });
   }
 
   // 检验 token 是否已过期
   try {
     await __WEBPACK_IMPORTED_MODULE_1_jsonwebtoken___default.a.verify(token, 'cedric1990');
   } catch (err) {
-    console.log("invalid token");
-    ctx.throw(401, 'invalid token');
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
+      code: '0014',
+      msg: '用户过期'
+    });
   }
 
   await next();
 };
 
-let router = __WEBPACK_IMPORTED_MODULE_3_koa_router___default()();
+let router = __WEBPACK_IMPORTED_MODULE_2_koa_router___default()();
 // 设置模块名为接口前缀
 router.prefix('/api/v1/user');
 router.post('/login', async ctx => {
-  ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["c" /* SuccessResult */]({
-    msg: '登录成功',
-    data: {
-      username: 'sf',
-      token: createToken('sf')
+  let username = ctx.request.body.username;
+  let password = ctx.request.body.password;
+  await new Promise(async function (resolve, reject) {
+    __WEBPACK_IMPORTED_MODULE_0__model__["c" /* UsersModel */].find({
+      username: username
+    }, (err, res) => {
+      if (err) {
+        reject({
+          code: "0001",
+          msg: err && err.msg ? err.msg : "未知错误"
+        });
+      } else if (!res.length) {
+        reject({
+          code: "0001",
+          msg: "当前用户名不存在"
+        });
+      } else {
+        const isPasswordValid = __WEBPACK_IMPORTED_MODULE_3_bcryptjs___default.a.compareSync(password, res[0].password);
+        if (!isPasswordValid) {
+          reject({
+            code: "0001",
+            msg: "密码不正确"
+          });
+        } else {
+          resolve();
+        }
+      }
+    });
+  }).then(async res => {
+    let token = createToken(username);
+    await new Promise(async function (resolve, reject) {
+      //第一个参数为查找，第二个为要修改的字段
+      __WEBPACK_IMPORTED_MODULE_0__model__["c" /* UsersModel */].updateOne({ "username": username }, {
+        token: token
+      }, function (err, doc) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(doc);
+        }
+      });
+    }).then(res => {
+      ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["c" /* SuccessResult */]({
+        msg: '登录成功',
+        data: {
+          username: username,
+          token: token
+        }
+      });
+    }).catch(err => {
+      ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
+        code: '0001',
+        msg: "服务器错误"
+      });
+    });
+  }).catch(err => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
+      code: err.code,
+      msg: err.msg
+    });
+  });
+});
+
+router.post('/loginOut', async ctx => {
+  let username = ctx.request.body.username;
+  await new Promise(async function (resolve, reject) {
+    //第一个参数为查找，第二个为要修改的字段
+    __WEBPACK_IMPORTED_MODULE_0__model__["c" /* UsersModel */].updateOne({ "username": username }, {
+      token: ""
+    }, function (err, doc) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(doc);
+      }
+    });
+  }).then(res => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["c" /* SuccessResult */]({
+      msg: '登出成功'
+    });
+  }).catch(err => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
+      code: '0001',
+      msg: "服务器错误"
+    });
+  });
+});
+
+router.post('/register', async ctx => {
+  let username = ctx.request.body.username;
+  let password = ctx.request.body.password;
+  await new Promise(async function (resolve, reject) {
+    let userModel = new __WEBPACK_IMPORTED_MODULE_0__model__["c" /* UsersModel */]({
+      username: username,
+      password: password,
+      token: ""
+    });
+    userModel.save(function (err, res) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(res);
+      }
+    });
+  }).then(res => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["c" /* SuccessResult */]({
+      msg: '注册成功'
+    });
+  }).catch(err => {
+    let propName = '';
+    if (err && err.code == 11000) {
+      let keyValue = err["keyValue"];
+      for (let prop in keyValue) {
+        propName = prop;
+      }
     }
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
+      code: err && err.code == 11000 ? '0002' : '0001',
+      msg: err && err.code == 11000 ? '已存在相同用户名的账号' : "注册失败"
+    });
   });
 });
-router.post('/check', checkToken, async ctx => {
-  ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["c" /* SuccessResult */]({
-    msg: '登录成功'
+
+/*router.post('/check', checkToken, async (ctx)=>{
+  ctx.body = new SuccessResult({
+    msg: '用户'
   });
-});
+})*/
 
 /* harmony default export */ __webpack_exports__["a"] = (router);
 
@@ -535,7 +647,7 @@ let ProductSchema = new Schema({
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* unused harmony export UsersModel */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return UsersModel; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__schema__ = __webpack_require__(20);
@@ -554,6 +666,9 @@ let UsersModel = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.model('user', 
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return UsersSchema; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_bcryptjs__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_bcryptjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_bcryptjs__);
+
 
 let Schema = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.Schema;
 
@@ -565,11 +680,13 @@ const UsersSchema = new Schema({
   },
   password: {
     type: String,
-    required: true
+    required: true,
+    set(val) {
+      return __WEBPACK_IMPORTED_MODULE_1_bcryptjs___default.a.hashSync(val);
+    }
   },
   token: {
-    type: String,
-    required: true
+    type: String
   }
 });
 
@@ -582,12 +699,7 @@ const UsersSchema = new Schema({
 module.exports = require("jsonwebtoken");
 
 /***/ }),
-/* 22 */
-/***/ (function(module, exports) {
-
-module.exports = require("jwt-autorefresh");
-
-/***/ }),
+/* 22 */,
 /* 23 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -602,7 +714,8 @@ let resultCodeMap = {
   'WL-0006': "参数缺失",
   'WL-0008': "用户没有权限",
   'WL-0010': "文件重复上传",
-  'WL-0014': "用户过期"
+  'WL-0014': "用户过期",
+  'WL-0016': "用户信息缺失"
 };
 
 class Result {
@@ -677,13 +790,13 @@ class Queue {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(__dirname) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_fs__ = __webpack_require__(7);
+/* WEBPACK VAR INJECTION */(function(__dirname) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_fs__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_fs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_fs__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_node_xlsx__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_node_xlsx__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_node_xlsx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_node_xlsx__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__util__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__utils_utils__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__utils_utils__ = __webpack_require__(7);
 
 
 const path = __webpack_require__(2);
@@ -961,12 +1074,12 @@ router.post('/stockCheck', async ctx => {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(__dirname) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_fs__ = __webpack_require__(7);
+/* WEBPACK VAR INJECTION */(function(__dirname) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_fs__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_fs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_fs__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_moment__ = __webpack_require__(27);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_moment___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_moment__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_node_xlsx__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_node_xlsx__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_node_xlsx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_node_xlsx__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_iconv_lite__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_iconv_lite___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_iconv_lite__);
@@ -1373,6 +1486,12 @@ module.exports = {
     }
   }
 };
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports) {
+
+module.exports = require("bcryptjs");
 
 /***/ })
 /******/ ]);
