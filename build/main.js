@@ -94,8 +94,8 @@ module.exports = require("path");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__stock_model__ = __webpack_require__(33);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_0__order_model__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return __WEBPACK_IMPORTED_MODULE_1__product_model__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_2__user_model__["a"]; });
-/* unused harmony reexport StocksModel */
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return __WEBPACK_IMPORTED_MODULE_2__user_model__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return __WEBPACK_IMPORTED_MODULE_3__stock_model__["a"]; });
 
 
 
@@ -422,7 +422,7 @@ router.post('/login', async ctx => {
   let username = ctx.request.body.username;
   let password = ctx.request.body.password;
   await new Promise(async function (resolve, reject) {
-    __WEBPACK_IMPORTED_MODULE_0__model__["c" /* UsersModel */].find({
+    __WEBPACK_IMPORTED_MODULE_0__model__["d" /* UsersModel */].find({
       username: username
     }, (err, res) => {
       if (err) {
@@ -451,7 +451,7 @@ router.post('/login', async ctx => {
     let token = createToken(username);
     await new Promise(async function (resolve, reject) {
       //第一个参数为查找，第二个为要修改的字段
-      __WEBPACK_IMPORTED_MODULE_0__model__["c" /* UsersModel */].updateOne({ "username": username }, {
+      __WEBPACK_IMPORTED_MODULE_0__model__["d" /* UsersModel */].updateOne({ "username": username }, {
         token: token
       }, function (err, doc) {
         if (err) {
@@ -486,7 +486,7 @@ router.post('/loginOut', async ctx => {
   let username = ctx.request.body.username;
   await new Promise(async function (resolve, reject) {
     //第一个参数为查找，第二个为要修改的字段
-    __WEBPACK_IMPORTED_MODULE_0__model__["c" /* UsersModel */].updateOne({ "username": username }, {
+    __WEBPACK_IMPORTED_MODULE_0__model__["d" /* UsersModel */].updateOne({ "username": username }, {
       token: ""
     }, function (err, doc) {
       if (err) {
@@ -511,7 +511,7 @@ router.post('/register', async ctx => {
   let username = ctx.request.body.username;
   let password = ctx.request.body.password;
   await new Promise(async function (resolve, reject) {
-    let userModel = new __WEBPACK_IMPORTED_MODULE_0__model__["c" /* UsersModel */]({
+    let userModel = new __WEBPACK_IMPORTED_MODULE_0__model__["d" /* UsersModel */]({
       username: username,
       password: password,
       token: ""
@@ -1443,13 +1443,107 @@ module.exports = require("iconv-lite");
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__model__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util__ = __webpack_require__(4);
+
 
 
 let router = __webpack_require__(1)();
 // 设置模块名为接口前缀
 router.prefix('/api/v1/stock');
-router.get('/aaa', async ctx => {
-  ctx.body = "首页";
+
+// 存为草稿
+router.post('/createAndUpdateDraft', async ctx => {
+  let warehouseDocType = ctx.request.body.warehouseDocType;
+  let productList = ctx.request.body.productList || [];
+  let id = ctx.request.body.id || [];
+  let warehouseDocStatus = 0;
+  await new Promise(async function (resolve, reject) {
+    __WEBPACK_IMPORTED_MODULE_0__model__["c" /* StocksModel */].findById(id, function (err, data) {
+      if (!data) {
+        let model = new __WEBPACK_IMPORTED_MODULE_0__model__["c" /* StocksModel */]({
+          warehouseDocType: warehouseDocType,
+          warehouseDocStatus: warehouseDocStatus,
+          productList: productList
+        });
+        model.save(function (err, res) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(res);
+          }
+        });
+      } else {
+        __WEBPACK_IMPORTED_MODULE_0__model__["c" /* StocksModel */].findByIdAndUpdate(id, {
+          warehouseDocType: warehouseDocType,
+          warehouseDocStatus: warehouseDocStatus,
+          productList: productList
+        }, function (err, res) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(res);
+          }
+        });
+      }
+    });
+  }).then(res => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_1__util__["c" /* SuccessResult */]({
+      msg: '创建单据草稿成功'
+    });
+  }).catch(err => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_1__util__["a" /* ErrorResult */]({
+      code: '0001',
+      msg: err && err.msg ? err.msg : "服务器错误"
+    });
+  });
+});
+
+// 存为完成的仓库单据
+router.post('/save', async ctx => {
+  let warehouseDocType = ctx.request.body.warehouseDocType;
+  let productList = ctx.request.body.productList || [];
+  let id = ctx.request.body.id || [];
+  let warehouseDocStatus = 0;
+  await new Promise(async function (resolve, reject) {
+    __WEBPACK_IMPORTED_MODULE_0__model__["c" /* StocksModel */].findById(id, function (err, data) {
+      if (!data) {
+        let model = new __WEBPACK_IMPORTED_MODULE_0__model__["c" /* StocksModel */]({
+          warehouseDocType: warehouseDocType,
+          warehouseDocStatus: warehouseDocStatus,
+          productList: productList
+        });
+        model.save(function (err, res) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(res);
+          }
+        });
+      } else {
+        __WEBPACK_IMPORTED_MODULE_0__model__["c" /* StocksModel */].findByIdAndUpdate(id, {
+          warehouseDocType: warehouseDocType,
+          warehouseDocStatus: warehouseDocStatus,
+          productList: productList
+        }, function (err, res) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(res);
+          }
+        });
+      }
+    });
+  }).then(res => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_1__util__["c" /* SuccessResult */]({
+      msg: '创建单据成功'
+    });
+  }).catch(err => {
+    console.log(err);
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_1__util__["a" /* ErrorResult */]({
+      code: '0001',
+      msg: err && err.msg ? err.msg : "服务器错误"
+    });
+  });
 });
 
 /* harmony default export */ __webpack_exports__["a"] = (router);
@@ -1513,7 +1607,7 @@ module.exports = require("bcryptjs");
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* unused harmony export StocksModel */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return StocksModel; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__schema__ = __webpack_require__(34);
@@ -1536,17 +1630,21 @@ let StocksModel = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.model('stock'
 let Schema = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.Schema;
 
 let StockSchema = new Schema({
-  'warehouseDocCode': {
+  /*'warehouseDocCode': {
     type: String,
     required: true,
     unique: true
-  }, // "仓库单编号"
+  },  // "仓库单编号"*/
   'warehouseDocType': {
-    type: Number,
+    type: String,
+    enum: ['0', '1'],
+    default: '0',
     required: true
   }, // "仓库单类型： 0 入库单， 1 出库单"
   'warehouseDocStatus': {
-    type: Number,
+    type: String,
+    enum: ['0', '1'],
+    default: '0',
     required: true
   }, // "仓库单类型： 0 进行中， 1 已完成"
   'productList': Array // "商品列表"
