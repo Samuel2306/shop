@@ -860,6 +860,37 @@ router.post('/query', async ctx => {
   });
 });
 
+// 插入商品
+router.post('/insert', async ctx => {
+  let params = ctx.request.body.params ? JSON.parse(ctx.request.body.params) : {};
+  await new Promise(async function (resolve, reject) {
+    let productModel = new __WEBPACK_IMPORTED_MODULE_2__model__["b" /* ProductsModel */](params);
+    productModel.save(function (err, res) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(res);
+      }
+    });
+  }).then(res => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["c" /* SuccessResult */]({
+      msg: '插入商品成功'
+    });
+  }).catch(err => {
+    let propName = '';
+    if (err && err.code == 11000) {
+      let keyValue = err["keyValue"];
+      for (let prop in keyValue) {
+        propName = prop;
+      }
+    }
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+      code: err && err.code == 11000 ? '0002' : '0001',
+      msg: err && err.code == 11000 ? '已存在相同商品编号的商品' : "服务器错误"
+    });
+  });
+});
+
 /* harmony default export */ __webpack_exports__["a"] = (router);
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, "server/interface/product"))
 

@@ -203,4 +203,41 @@ router.post('/query', async ctx => {
     })
 })
 
+
+
+// 插入商品
+router.post('/insert', async ctx => {
+  let params = ctx.request.body.params ? JSON.parse(ctx.request.body.params) : {}
+  await new Promise(async function(resolve, reject){
+    let productModel = new ProductsModel(params)
+    productModel.save(function (err, res) {
+      if (err) {
+        reject(err)
+      }
+      else {
+        resolve(res)
+      }
+
+    })
+  })
+    .then((res) => {
+      ctx.body = new SuccessResult({
+        msg: '插入商品成功'
+      })
+    })
+    .catch((err) => {
+      let propName = ''
+      if(err && err.code == 11000){
+        let keyValue = err["keyValue"]
+        for (let prop in keyValue) {
+          propName = prop
+        }
+      }
+      ctx.body = new ErrorResult({
+        code: err && err.code == 11000 ? '0002' : '0001',
+        msg: err && err.code == 11000 ? '已存在相同商品编号的商品' : "服务器错误"
+      })
+    })
+})
+
 export default router
