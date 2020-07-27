@@ -796,6 +796,70 @@ router.post('/upload', async ctx => {
   });
 });
 
+// 查询商品数据
+router.post('/query', async ctx => {
+  let pageSize = ctx.request.body.pageSize;
+  let pageNum = ctx.request.body.pageNum;
+  let productName = ctx.request.body.productName || ''; // 商品名称
+  let productCode = ctx.request.body.productCode || ''; // 商品编号
+  let stock = ctx.request.body.stock || ''; // 库存
+
+  if (!pageSize) {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+      code: '0006',
+      msg: "缺少pageSize参数"
+    });
+    return;
+  }
+  if (!pageNum) {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+      code: '0006',
+      msg: "缺少pageNum参数"
+    });
+    return;
+  }
+
+  await new Promise(async function (resolve, reject) {
+    let productNameReg = new RegExp(productName, 'i');
+    let productCodeReg = new RegExp(productCode, 'i');
+
+    let documentCount;
+    await __WEBPACK_IMPORTED_MODULE_2__model__["b" /* ProductsModel */].count({
+      $and: [//多条件，数组
+      { productName: { $regex: productNameReg } }, { productCode: { $regex: productCodeReg } }].concat(stock ? [{ stock: stock }] : [])
+    }, (err, count) => {
+      documentCount = err ? 0 : parseInt(count);
+    });
+
+    let productModel = __WEBPACK_IMPORTED_MODULE_2__model__["b" /* ProductsModel */].find({
+      $and: [//多条件，数组
+      { productName: { $regex: productNameReg } }, { productCode: { $regex: productCodeReg } }].concat(stock ? [{ stock: stock }] : [])
+    });
+    productModel.skip((pageNum - 1) * pageSize).limit(parseInt(pageSize));
+    productModel.exec(function (err, res) {
+      console.log(err);
+      if (err) {
+        reject(err);
+      } else {
+        let data = {
+          total: documentCount,
+          data: res
+        };
+        resolve(data);
+      }
+    });
+  }).then(res => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["c" /* SuccessResult */]({
+      msg: '获取商品数据成功',
+      data: res
+    });
+  }).catch(err => {
+    ctx.body = new __WEBPACK_IMPORTED_MODULE_3__util__["a" /* ErrorResult */]({
+      msg: err ? err : "获取商品数据失败"
+    });
+  });
+});
+
 /* harmony default export */ __webpack_exports__["a"] = (router);
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, "server/interface/product"))
 
@@ -1104,7 +1168,7 @@ router.post('/query', async ctx => {
     });
   }).catch(err => {
     ctx.body = new __WEBPACK_IMPORTED_MODULE_6__util__["a" /* ErrorResult */]({
-      msg: err ? err : "导入数据失败"
+      msg: err ? err : "获取数据失败"
     });
   });
 });

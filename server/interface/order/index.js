@@ -319,7 +319,7 @@ router.post('/query', async ctx => {
     })
     .catch((err) => {
       ctx.body = new ErrorResult({
-        msg: err ? err : "导入数据失败"
+        msg: err ? err : "获取数据失败"
       })
     })
 })

@@ -3,6 +3,7 @@ import fs from "fs";
 const path = require('path')
 import xlsx2json from "node-xlsx";
 import {
+  OrdersModel,
   ProductsModel,
 } from '../../model'
 import {
@@ -124,6 +125,80 @@ router.post('/upload', async ctx => {
       ctx.body = new ErrorResult({
         code: err && err.code == 11000 ? '0002' : '0001',
         msg: err && err.code == 11000 ? '插入部分商品的商品编号已存在' : "服务器错误"
+      })
+    })
+})
+
+// 查询商品数据
+router.post('/query', async ctx => {
+  let pageSize = ctx.request.body.pageSize
+  let pageNum = ctx.request.body.pageNum
+  let productName = ctx.request.body.productName || '' // 商品名称
+  let productCode = ctx.request.body.productCode || '' // 商品编号
+  let stock = ctx.request.body.stock || '' // 库存
+
+  if(!pageSize){
+    ctx.body = new ErrorResult({
+      code: '0006',
+      msg: "缺少pageSize参数"
+    })
+    return
+  }
+  if(!pageNum){
+    ctx.body = new ErrorResult({
+      code: '0006',
+      msg: "缺少pageNum参数"
+    })
+    return
+  }
+
+  await new Promise(async function(resolve, reject){
+    let productNameReg = new RegExp(productName, 'i')
+    let productCodeReg = new RegExp(productCode, 'i')
+
+
+    let documentCount
+    await ProductsModel.count({
+      $and : [ //多条件，数组
+        {productName : {$regex : productNameReg}},
+        {productCode : {$regex : productCodeReg}},
+      ].concat(stock ? [{stock: stock}] : [])
+    }, (err, count) => {
+      documentCount = err ? 0 : parseInt(count)
+    })
+
+
+    let productModel = ProductsModel.find(
+      {
+        $and : [ //多条件，数组
+          {productName : {$regex : productNameReg}},
+          {productCode : {$regex : productCodeReg}},
+        ].concat(stock ? [{stock: stock}] : [])
+      }
+    )
+    productModel.skip((pageNum - 1) * pageSize).limit(parseInt(pageSize))
+    productModel.exec(function (err, res) {
+      console.log(err)
+      if (err) {
+        reject(err)
+      } else {
+        let data = {
+          total: documentCount,
+          data: res
+        }
+        resolve(data)
+      }
+    })
+  })
+    .then((res) => {
+      ctx.body = new SuccessResult({
+        msg: '获取商品数据成功',
+        data: res
+      })
+    })
+    .catch((err) => {
+      ctx.body = new ErrorResult({
+        msg: err ? err : "获取商品数据失败"
       })
     })
 })
