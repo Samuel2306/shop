@@ -1,32 +1,11 @@
 <template>
   <section class="container">
-    <el-input type="text" v-model="content" @keydown.native="changeContent" />  <!-- @change="changeContent"-->
     <DynamicForm :formConfig="formConfig" :value="formData" @input="formChange"/>
     <TableComponent
       ref="table"
       :columnsData="columnsData"
       @emitEvent="handleTableEvent"
     />
-
-
-    <el-upload
-      class="upload-demo"
-      action="https://localhost:3000/api/v1/order/upload"
-      :http-request="uploadFileChange"
-      accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-      :show-file-list="true">
-      <el-button size="small" type="primary">点击上传</el-button>
-    </el-upload>
-    <button @click="uploadData">倒入订单</button>
-
-
-    <!--<form action="http://localhost:3000/api/v1/order/upload" method="post" enctype="multipart/form-data">
-      <input type="file" name="file" id="file" value="" multiple="multiple" />
-      <input type="submit" value="提交"/>
-    </form>-->
-    <nuxt-link class="button" to="/about">
-      About page
-    </nuxt-link>
   </section>
 </template>
 
@@ -34,7 +13,6 @@
   import axios from 'axios'
   import TableComponent from '../components/TableComponent.vue'
   import DynamicForm from '../components/DynamicForm/DynamicForm.vue'
-  const uploadRequest = axios.create({})
   let searchModel = {
     name: 'searchModel',
     post: function(params){
@@ -65,16 +43,6 @@
   }
 
   export default {
-    asyncData({ req }) {
-      return {
-        name: req ? 'server' : 'client'
-      }
-    },
-    head() {
-      return {
-        title: `About Page (${this.name}-side)`
-      }
-    },
     components: {
       TableComponent,
       DynamicForm,
@@ -300,55 +268,6 @@
       }
     },
     methods: {
-      changeContent($event){
-        let event = window.event || $event;
-        let code = event.keyCode || event.which || event.charCode;
-        if (code == 13) {
-          console.log($event)
-          console.log("asd")
-        }
-      },
-      uploadFileChange(param){
-        this.fileList = param.file
-      },
-      uploadData(){
-        let that = this
-        let reader = new FileReader();
-        reader.addEventListener("load", function () {
-          let formData = new FormData()
-          formData.append("files", that.fileList)
-          formData.append("platform", 'tb')
-          formData.append("createDate", '2020/07/31')
-
-
-          uploadRequest.post('/api/v1/order/upload', formData, {
-            headers:{'Content-Type':'multipart/form-data'},
-            timeout: 50000
-          })
-            .then((res) => {
-              console.log(res)
-            })
-            .catch((error) => {
-              console.log(error)
-            })
-        }, false);
-
-        reader.onprogress = function (event) {
-          console.log(event)
-          if(event.lengthComputable) {
-            console.log(event.loaded + '/' + event.total)
-          }
-        }
-        reader.addEventListener("error", function () {
-          console.log('Could not read file, error code is ' + reader.error.code)
-        })
-
-
-        reader.readAsDataURL(this.fileList);
-      },
-
-
-
       handleTableEvent(params){
         let event = params.type
         let handlerObj = this.handlerMap[event]
@@ -370,30 +289,6 @@
       }
     },
     mounted(){
-      /*let item = {
-        "platform":"tb",
-        "orderNo":"1095896609307326460",
-        "title":"【一只陆同款】Y64天丝休闲气质侧开叉衬衫+K20杏色百搭雪纺中裤",
-        "price":119,
-        "orderNum":1,
-        "externalSysNum":"Y64",
-        "productAttrs":"颜色分类：单件衬衣;尺码：均码[（衬衣）]",
-        "packageInfo":"null",
-        "remark":"null",
-        "orderStatus":"交易关闭",
-        "productCode":"Y64",
-        "createDate":"2020-08-02 00:00:00"
-      }
-
-      axios.post("/api/v1/order/insert", {
-        params: JSON.stringify(item)
-      })
-        .then((res) => {
-          console.log(res)
-        })
-        .catch((err) => {
-          console.log(err)
-        })*/
 
     }
   }
