@@ -11,7 +11,7 @@
 
 <script>
   import axios from 'axios'
-  import TableComponent from '../components/TableComponent.vue'
+  import TableComponent from '../components/DynamicTable.vue'
   import DynamicForm from '../components/DynamicForm/DynamicForm.vue'
   let searchModel = {
     name: 'searchModel',
@@ -130,7 +130,7 @@
         formConfig: {
           "inline": true,
           "labelPosition": "right",
-          "labelWidth": "",
+          "labelWidth": "50px",
           "size": "small",
           "statusIcon": true,
           "formItemList": [
@@ -199,11 +199,6 @@
                 {
                   "value": "2",
                   "label": "看电影",
-                  "disabled": false
-                },
-                {
-                  "value": "3",
-                  "label": "打篮球",
                   "disabled": false
                 }
               ]
@@ -294,9 +289,12 @@
   }
 </script>
 
-<style scoped>
-.title
-{
-  margin: 50px 0;
-}
+<style lang="scss">
+  .title {
+    margin: 50px 0;
+  }
+  .dynamicFormItem{
+    height: 33px;
+    overflow-y: hidden;
+  }
 </style>

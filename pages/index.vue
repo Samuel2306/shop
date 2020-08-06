@@ -32,7 +32,7 @@
 
 <script>
   import axios from 'axios'
-  import TableComponent from '../components/TableComponent.vue'
+  import TableComponent from '../components/DynamicTable.vue'
   import DynamicForm from '../components/DynamicForm/DynamicForm.vue'
   const uploadRequest = axios.create({})
   let searchModel = {
