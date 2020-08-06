@@ -1,5 +1,6 @@
 <template>
   <section class="container">
+    <el-input type="text" v-model="content" @keydown.native="changeContent" />  <!-- @change="changeContent"-->
     <DynamicForm :formConfig="formConfig" :value="formData" @input="formChange"/>
     <SearchFormComponent
       ref="form"
@@ -105,6 +106,7 @@
             component: 'product_list_table_operation_component',
           },
         ],
+        content: "",
         handlerMap: {
           search: {
             paramsExchange: function(row){
@@ -305,6 +307,14 @@
       }
     },
     methods: {
+      changeContent($event){
+        let event = window.event || $event;
+        let code = event.keyCode || event.which || event.charCode;
+        if (code == 13) {
+          console.log($event)
+          console.log("asd")
+        }
+      },
       uploadFileChange(param){
         this.fileList = param.file
       },
