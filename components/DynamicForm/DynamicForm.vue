@@ -10,6 +10,7 @@
     :status-icon="formConfig.statusIcon">
     <el-row :gutter="formConfig.gutter || gutter">
       <dynamic-form-item
+        v-if="item.type != 'formatter'"
         :span="formConfig.cols ? 24 / formConfig.cols : 24 / defaultCols"
         v-for="item in formConfig.formItemList"
         :key="item.key"
@@ -17,6 +18,11 @@
         :value="value[item.key]"
         @input="handleInput($event, item.key)"
       />
+      <component
+      v-if="item.type == 'formatter'"
+      @input="handleInput($event, item.key)"
+      :is="item.component">
+      </component>
     </el-row>
   </el-form>
 </template>

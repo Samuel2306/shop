@@ -1,7 +1,8 @@
 <template>
   <section class="container">
     <DynamicForm :formConfig="formConfig" :value="formData" @input="formChange"/>
-    <TableComponent
+    <DynamicToolBar />
+    <DynamicTable
       ref="table"
       :columnsData="columnsData"
       @emitEvent="handleTableEvent"
@@ -11,8 +12,9 @@
 
 <script>
   import axios from 'axios'
-  import TableComponent from '../components/DynamicTable.vue'
+  import DynamicTable from '../components/DynamicTable/DynamicTable.vue'
   import DynamicForm from '../components/DynamicForm/DynamicForm.vue'
+  import DynamicToolBar from '../components/DynamicToolBar/DynamicToolBar.vue'
   let searchModel = {
     name: 'searchModel',
     post: function(params){
@@ -44,8 +46,9 @@
 
   export default {
     components: {
-      TableComponent,
+      DynamicTable,
       DynamicForm,
+      DynamicToolBar,
     },
     data(vm){
       return {
@@ -209,7 +212,7 @@
               "value": [],
               "rules": [],
               "key": "city",
-              props: { multiple: true },
+              "props": { multiple: true },
               "options": [{
                 value: 1,
                 label: '东南',
