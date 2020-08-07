@@ -1,6 +1,12 @@
 <template>
   <el-col :span="item.span || span">
     <el-form-item class="dynamicFormItem" :rules="item.Rules" :label="item.label" :prop="item.key">
+      <component
+        @input="componentInput"
+        v-if="item.type == 'formatter'"
+        :is="item.component">
+      </component>
+
       <el-input
         v-if="item.type==='input'"
         v-bind="$attrs" v-on="$listeners"
@@ -75,7 +81,7 @@
         v-else-if="item.type==='cascader'"
         :options="item.options"
         :props="item.props"
-        @change="changeCascader"
+        @change="componentInput"
         :show-all-levels="false"
         collapse-tags
         clearable>
@@ -99,7 +105,7 @@
       }
     },
     methods: {
-      changeCascader(value){
+      componentInput(value){
         this.$emit('input', value)
       }
     }

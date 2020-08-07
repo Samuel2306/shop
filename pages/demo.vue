@@ -138,6 +138,11 @@
           "statusIcon": true,
           "formItemList": [
             {
+              "type": "formatter",
+              "component": 'product_list_table_operation_component',
+              "key": "aaa",
+            },
+            {
               "type": "input",
               "label": "姓名",
               "disable": false,

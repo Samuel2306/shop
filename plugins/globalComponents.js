@@ -23,7 +23,7 @@ class GlobalComponents {
     if(arguments.length == 2){
       params = compName
       compName = namespace
-      namespace = 'default'
+      namespace = 'global'
     }
     if(!params || !params.render || typeof params.render != 'function'){
       console.error("定义全局组件必须传入render函数")
