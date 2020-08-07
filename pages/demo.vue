@@ -151,7 +151,8 @@
               "placeholder": "请输入姓名",
               "rules": [],
               "key": "name",
-              "subtype": "text"
+              "subtype": "text",
+              "visible": true,
             },
             {
               "type": "select",
