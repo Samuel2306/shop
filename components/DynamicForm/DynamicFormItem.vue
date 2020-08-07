@@ -17,13 +17,15 @@
         :autosize="item.autosize">
       </el-input>
       <el-select
+        @visible-change="visibleChange"
+        @change="changeSelect($event,item)"
         v-else-if="item.type==='select'"
         v-bind="$attrs" v-on="$listeners"
         :multiple="item.multiple"
         :disabled="item.disabled"
         :multiple-limit="item.multipleLimit">
         <el-option
-          v-for="o in item.options"
+          v-for="o in (item.options || [])"
           :key="o.value"
           :label="o.label"
           :value="o.value"
@@ -37,7 +39,7 @@
         :readonly="item.readonly">
         <el-radio-button
           v-if="item.button"
-          v-for="(option,index) in item.options"
+          v-for="(option,index) in (item.options || [])"
           :key="index"
           :disabled="option.disabled"
           :label="option.value">
@@ -45,7 +47,7 @@
         </el-radio-button>
         <el-radio
           v-if="!item.button"
-          v-for="(option,index) in item.options"
+          v-for="(option,index) in (item.options || [])"
           :key="index"
           :disabled="option.disabled"
           :label="option.value">
@@ -61,7 +63,7 @@
         :readonly="item.readonly">
         <el-checkbox-button
           v-if="item.button"
-          v-for="(option,index) in item.options"
+          v-for="(option,index) in (item.options || [])"
           :key="index"
           :disabled="option.disabled"
           :label="option.value">
@@ -69,7 +71,7 @@
         </el-checkbox-button>
         <el-checkbox
           v-if="!item.button"
-          v-for="(option,index) in item.options"
+          v-for="(option,index) in (item.options || [])"
           :key="index"
           :disabled="option.disabled"
           :label="option.value">
@@ -100,13 +102,51 @@
         type: Object,
         required: true
       },
+      formItemList: {
+        type: Array,
+        required: true
+      },
       span: {
         type: Number,  // 每个表单元素在栅格化系统中所占的列数
+      }
+    },
+    data(){
+      return {
+        oldSelectValue: null,
+        newSelectValue: null,
       }
     },
     methods: {
       componentInput(value){
         this.$emit('input', value)
+      },
+
+      copyValue(target, source){
+        if(typeof source == 'object' && source){
+          if(Array.isArray(source)){
+            target = source.slice(0)
+          }else{
+            target = Object.assign({}, source)
+          }
+        }else{
+          target = source
+        }
+        return target
+      },
+      visibleChange(bool){
+        if(bool){
+          this.oldSelectValue = this.copyValue(this.oldSelectValue, this.newSelectValue)
+        }
+      },
+      async changeSelect(value, item){
+        let flag = item.changePreValidate ? await item.changePreValidate(this.oldSelectValue, value, item, this.formItemList) : true
+        if(flag){
+          this.newSelectValue = value
+          this.oldSelectValue = this.copyValue(this.oldSelectValue, this.newSelectValue)
+          item.changeCallback && item.changeCallback(value, Object.assign({}, item), this.formItemList)
+        }else{
+          this.newSelectValue = this.copyValue(this.newSelectValue, this.oldSelectValue)
+        }
       }
     }
   }

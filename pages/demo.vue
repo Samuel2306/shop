@@ -165,7 +165,27 @@
               "options": [
                 {"label": "精品商城","value": "PT001"},
                 {"label": "车商城","value": "PT003"}
-              ]
+              ],
+              "changePreValidate": function(oldValue, newValue, obj){  // 返回一个boolean值，返回值为真说明允许改变，否则变回原来的值
+                return new Promise((resolve, reject) => {
+                  setTimeout(() => {
+                    resolve(true)
+                    vm.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                      confirmButtonText: '确定',
+                      cancelButtonText: '取消',
+                      type: 'warning'
+                    }).then(() => {
+                      resolve(true)
+                    }).catch(() => {
+                      resolve(false)
+                      vm.formData[obj.key] = oldValue
+                    });
+                  }, 300)
+                })
+              },
+              "changeCallback": function(newValue, obj){
+                // console.log(newValue)
+              }
             },
             {
               "type": "radio",
@@ -289,6 +309,30 @@
       formChange(data){
         this.formData = data
         console.log(this.formData)
+        /*let item = {
+          "platform":"tb",
+          "orderNo":"1095896609307326460",
+          "title":"【一只陆同款】Y64天丝休闲气质侧开叉衬衫+K20杏色百搭雪纺中裤",
+          "price":119,
+          "orderNum":1,
+          "externalSysNum":"Y64",
+          "productAttrs":"颜色分类：单件衬衣;尺码：均码[（衬衣）]",
+          "packageInfo":"null",
+          "remark":"null",
+          "orderStatus":"交易关闭",
+          "productCode":"Y64",
+          "createDate":"2020-08-02 00:00:00"
+        }
+
+        axios.post("/api/v1/order/insert", {
+          params: JSON.stringify(this.formData)
+        })
+          .then((res) => {
+            console.log(res)
+          })
+          .catch((err) => {
+            console.log(err)
+          })*/
       }
     },
     mounted(){

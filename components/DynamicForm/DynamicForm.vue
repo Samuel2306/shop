@@ -10,10 +10,12 @@
     :status-icon="formConfig.statusIcon">
     <el-row :gutter="formConfig.gutter || gutter">
       <dynamic-form-item
+        :ref="item.key + ts"
         :span="formConfig.cols ? 24 / formConfig.cols : 24 / defaultCols"
         v-for="item in formConfig.formItemList"
         :key="item.key"
         :item="item"
+        :formItemList="formConfig.formItemList"
         :value="value[item.key]"
         @input="handleInput($event, item.key)"
       />
