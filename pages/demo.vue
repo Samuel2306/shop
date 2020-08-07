@@ -190,7 +190,7 @@
                   }, 300)
                 })
               },
-              "changeCallback": function(newValue, obj){
+              "changeCallback": function(newValue, obj, list){
                 // console.log(newValue)
               }
             },
