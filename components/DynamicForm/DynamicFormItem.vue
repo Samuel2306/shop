@@ -148,6 +148,13 @@
           this.newSelectValue = this.copyValue(this.newSelectValue, this.oldSelectValue)
         }
       }
+    },
+    mounted(){
+      this.$nextTick(() => {
+        if(this.item.getOptionsAsync){
+          this.item.getOptionsFunc && this.item.getOptionsFunc(this.item, this.formItemList)
+        }
+      })
     }
   }
 </script>

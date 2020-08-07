@@ -166,7 +166,14 @@
                 {"label": "精品商城","value": "PT001"},
                 {"label": "车商城","value": "PT003"}
               ],
-              "changePreValidate": function(oldValue, newValue, obj){  // 返回一个boolean值，返回值为真说明允许改变，否则变回原来的值
+              "getOptionsAsync": true, // 是否动态获取数据
+              "getOptionsFunc": function(obj, list){
+                obj.options = [
+                  {"label": "精品商城1","value": "PT001"},
+                  {"label": "车商城1","value": "PT003"}
+                ]
+              },
+              "changePreValidate": function(oldValue, newValue, obj, list){  // 返回一个boolean值，返回值为真说明允许改变，否则变回原来的值
                 return new Promise((resolve, reject) => {
                   setTimeout(() => {
                     resolve(true)
