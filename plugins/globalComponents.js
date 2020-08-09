@@ -20,12 +20,9 @@ class GlobalComponents {
       console.error("定义全局组件至少传入两个参数")
       return
     }
-    if(arguments.length == 2){
-      params = compName
-      compName = namespace
-      namespace = 'global'
-    }
     if(!params || !params.render || typeof params.render != 'function'){
+      console.log(compName)
+      console.log(params)
       console.error("定义全局组件必须传入render函数")
       return
     }
@@ -43,6 +40,11 @@ let globCompNameSpaces = new GlobalComponents()
 
 
 Vue.addGlobComp = function(namespace, compName, params){
+  if(arguments.length == 2){
+    params = compName
+    compName = namespace
+    namespace = 'global'
+  }
   globCompNameSpaces.add(namespace, compName, params)
 }
 

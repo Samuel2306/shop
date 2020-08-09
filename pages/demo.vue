@@ -1,6 +1,7 @@
 <template>
   <section class="container">
     <DynamicForm :formConfig="formConfig" :value="formData" @input="formChange"/>
+    <component is="global_button" :asyncObj="buttonFlag" @click="run"></component>
     <DynamicToolBar />
     <DynamicTable
       ref="table"
@@ -52,6 +53,7 @@
     },
     data(vm){
       return {
+        buttonFlag: null,
         fileList: null,
         columnsData: [
           {
@@ -341,10 +343,57 @@
           .catch((err) => {
             console.log(err)
           })*/
+      },
+      runQueue(list, params){ // params：传给list中第一个promise对象的参数
+        let p = Promise.resolve(params);
+        p = list.reduce((origin, item) => {
+          return origin.then((res) => {  // res是上一个promise对象传过来的结果
+            return new Promise((resolve, reject) => {
+              item(res, resolve, reject)
+            })
+          });
+        }, p)
+        return p
+      },
+      h1(res, next, abort){
+        console.log(res)
+        setTimeout(() => {
+          try {
+            console.log('h1')
+            next('h1');
+          }catch (e) {
+            console.log(e)
+            abort(e)
+          }
+        }, 1000);
+      },
+      h2(res, next, abort){
+        console.log(res)
+        setTimeout(() => {
+          try {
+            console.log('h2')
+            next('h2');
+          }catch (e) {
+            abort(e)
+          }
+        }, 1000);
+      },
+      h3(res, next, abort){
+        console.log(res)
+        setTimeout(() => {
+          try {
+            console.log('h3')
+            next('h3');
+          }catch (e) {
+            abort(e)
+          }
+        }, 1000);
+      },
+      run(){
+        this.buttonFlag = this.runQueue([this.h1,this.h2,this.h3], {name: 'sf', age: 28})
       }
     },
     mounted(){
-
     }
   }
 </script>

@@ -151,6 +151,63 @@ function addGlobComp(){
   /**
    * 商品列表页面相关全局组件
    */
+
+  Vue.addGlobComp('button', {
+    props: {
+      asyncObj: {
+        type: Promise,
+        default: () => {
+          return null
+        }
+      }
+    },
+    data(){
+      return {
+        state: false,
+        text: "按钮",
+        timeHandler: null
+      }
+    },
+    watch: {
+      asyncObj(newObj){
+        if(newObj){
+          this.toggleState(true)
+          newObj
+            .catch(() => {
+              this.toggleState(false)
+            })
+            .finally(() => {
+              this.toggleState(false)
+            })
+        }
+      }
+    },
+    render: function(createElement) {
+      return createElement(
+        'el-button',
+        {
+          class: 'mood',
+          on: {
+            click: () => {
+              if(!this.state){
+                this.$emit('click')
+                this.toggleState(true)
+              }
+            }
+          },
+          attrs: {
+            loading: this.state
+          }
+        },
+        [this.text]
+      )
+    },
+    methods: {
+      toggleState(bool) {
+        this.state = bool != undefined ? bool : !this.state
+      }
+    }
+  })
 }
 
 
