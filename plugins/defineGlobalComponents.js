@@ -154,28 +154,33 @@ function addGlobComp(){
 
   Vue.addGlobComp('button', {
     props: {
-      asyncObj: {
-        type: Promise,
-        default: () => {
-          return null
+      queue: {
+        type: Array,
+        default: function(){
+          return []
         }
+      },
+      params: {
+        type: Object,
+        default: function(){
+          return {}
+        }
+      },
+      formatterParams: {
+        type: Function
       }
     },
     data(){
       return {
         state: false,
         text: "按钮",
-        timeHandler: null
+        asyncObj: null
       }
     },
     watch: {
       asyncObj(newObj){
         if(newObj){
-          this.toggleState(true)
           newObj
-            .catch(() => {
-              this.toggleState(false)
-            })
             .finally(() => {
               this.toggleState(false)
             })
@@ -192,6 +197,7 @@ function addGlobComp(){
               if(!this.state){
                 this.$emit('click')
                 this.toggleState(true)
+                this.runQueue()
               }
             }
           },
@@ -203,6 +209,26 @@ function addGlobComp(){
       )
     },
     methods: {
+      async runQueue(){ // params：传给list中第一个promise对象的参数
+        let params
+        try{
+          params = this.formatterParams ? await this.formatterParams.apply(this.$parent) : (this.params ? this.params : {})
+        }catch(e){
+          console.error(e)
+          this.toggleState(false)
+          return
+        }
+
+        let p = Promise.resolve(params);
+        p = this.queue.reduce((origin, item) => {
+          return origin.then((res) => {  // res是上一个promise对象传过来的结果
+            return new Promise(async (resolve, reject) => {
+              item(res, resolve, reject)
+            })
+          });
+        }, p)
+        this.asyncObj = p
+      },
       toggleState(bool) {
         this.state = bool != undefined ? bool : !this.state
       }

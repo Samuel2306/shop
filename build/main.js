@@ -338,6 +338,7 @@ module.exports = require("node-xlsx");
 /* unused harmony export getType */
 /* unused harmony export deepClone */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return replaceAll; });
+/* unused harmony export runQueue */
 const checkExcelType = file => {
   let type = file.type;
   let name = file.name;
@@ -410,6 +411,20 @@ const replaceAll = function (str, oldContent, newContent) {
     str = str.replace(oldContent, newContent);
   }
   return str;
+};
+
+const runQueue = function (list, params) {
+  // params：传给list中第一个promise对象的参数
+  let p = Promise.resolve(params);
+  p = list.reduce((origin, item) => {
+    return origin.then(res => {
+      // res是上一个promise对象传过来的结果
+      return new Promise(async (resolve, reject) => {
+        item(res, resolve, reject);
+      });
+    });
+  }, p);
+  return p;
 };
 
 

@@ -87,6 +87,18 @@ const replaceAll = function(str, oldContent, newContent){
   return str
 }
 
+const runQueue = function(list, params){ // params：传给list中第一个promise对象的参数
+  let p = Promise.resolve(params);
+  p = list.reduce((origin, item) => {
+    return origin.then((res) => {  // res是上一个promise对象传过来的结果
+      return new Promise(async (resolve, reject) => {
+        item(res, resolve, reject)
+      })
+    });
+  }, p)
+  return p
+}
+
 
 export {
   checkExcelType,
@@ -94,4 +106,5 @@ export {
   getType,
   deepClone,
   replaceAll,
+  runQueue,
 }
