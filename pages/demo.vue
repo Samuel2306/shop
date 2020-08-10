@@ -1,7 +1,7 @@
 <template>
   <section class="container">
     <DynamicForm :formConfig="formConfig" :value="formData" @input="formChange"/>
-    <component is="global_button" :queue="[this.h1,this.h2,this.h3]" :params="{name: 'sf'}"></component>
+    <component is="global_button" :queue="[this.h1, this.h2, this.h3]" :params="{name: 'sf'}" requestType="parallel"></component>
     <DynamicToolBar />
     <DynamicTable
       ref="table"

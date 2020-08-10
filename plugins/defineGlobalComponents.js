@@ -168,23 +168,16 @@ function addGlobComp(){
       },
       formatterParams: {
         type: Function
+      },
+      requestType: {
+        type: String,
+        default: 'queue'  // queue 串行  parallel 并行
       }
     },
     data(){
       return {
         state: false,
-        text: "按钮",
-        asyncObj: null
-      }
-    },
-    watch: {
-      asyncObj(newObj){
-        if(newObj){
-          newObj
-            .finally(() => {
-              this.toggleState(false)
-            })
-        }
+        text: "按钮"
       }
     },
     render: function(createElement) {
@@ -220,14 +213,31 @@ function addGlobComp(){
         }
 
         let p = Promise.resolve(params);
-        p = this.queue.reduce((origin, item) => {
-          return origin.then((res) => {// res是上一个promise对象传过来的结果
-            return new Promise(async (resolve, reject) => {
-              await item(res, resolve, reject)
+        if(this.requestType == 'queue'){
+          p = this.queue.reduce((origin, item) => {
+            return origin.then((res) => {// res是上一个promise对象传过来的结果
+              return new Promise(async (resolve, reject) => {
+                await item(res, resolve, reject)
+              })
+            });
+          }, p)
+          p.finally(() => {
+            this.toggleState(false)
+          })
+        }else{
+          p.then((params) => {
+            let promiseArr = []
+            this.queue.forEach((item) => {
+              promiseArr.push(new Promise(async (resolve, reject) => {
+                await item(params, resolve, reject)
+              }))
             })
-          });
-        }, p)
-        this.asyncObj = p
+            Promise.all(promiseArr)
+              .finally(() => {
+                this.toggleState(false)
+              })
+          })
+        }
       },
       toggleState(bool) {
         this.state = bool != undefined ? bool : !this.state
