@@ -8,6 +8,7 @@ import {
   SuccessResult,
   ErrorResult,
 } from '../../util'
+import baseConfig from '../../config/baseConfig'
 
 
 function createToken(username){
@@ -24,6 +25,10 @@ function createToken(username){
 }
 
 const checkToken = async (ctx, next) => {
+  if(!baseConfig.userCheck){
+    await next()
+    return
+  }
   let token = ctx.request.body.token
   if (!token) {
     ctx.body = new ErrorResult({
@@ -35,7 +40,6 @@ const checkToken = async (ctx, next) => {
 
   // 检验 token 是否已过期
   try {
-
     await jwt.verify(token, 'cedric1990')
     await next()
   } catch (err) {

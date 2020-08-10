@@ -280,7 +280,7 @@ router.post('/query', checkToken, async ctx => {
 
 
     let documentCount
-    await OrdersModel.count({
+    await OrdersModel.countDocuments({
       $and : [ //多条件，数组
         {orderNo : {$regex : orderNoReg}},
         {title : {$regex : titleReg}},
@@ -302,7 +302,7 @@ router.post('/query', checkToken, async ctx => {
     )
     orderModel.sort({"createDate" : -1}).skip((pageNum - 1) * pageSize).limit(parseInt(pageSize))
     orderModel.exec(function (err, res) {
-      console.log(err)
+      console.log('err:' + err)
       if (err) {
         reject(err)
       } else {

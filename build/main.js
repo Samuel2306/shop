@@ -135,6 +135,9 @@ module.exports = require("path");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_bcryptjs__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_bcryptjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_bcryptjs__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__util__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__config_baseConfig__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__config_baseConfig___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5__config_baseConfig__);
+
 
 
 
@@ -151,6 +154,10 @@ function createToken(username) {
 }
 
 const checkToken = async (ctx, next) => {
+  if (!__WEBPACK_IMPORTED_MODULE_5__config_baseConfig___default.a.userCheck) {
+    await next();
+    return;
+  }
   let token = ctx.request.body.token;
   if (!token) {
     ctx.body = new __WEBPACK_IMPORTED_MODULE_4__util__["a" /* ErrorResult */]({
@@ -162,7 +169,6 @@ const checkToken = async (ctx, next) => {
 
   // 检验 token 是否已过期
   try {
-
     await __WEBPACK_IMPORTED_MODULE_1_jsonwebtoken___default.a.verify(token, 'cedric1990');
     await next();
   } catch (err) {
@@ -439,7 +445,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_koa__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__connect__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__interface__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_nuxt__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_nuxt__ = __webpack_require__(33);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_nuxt___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_nuxt__);
 
 
@@ -454,7 +460,7 @@ async function start() {
   const port = process.env.PORT || 3000;
 
   // Import and Set Nuxt.js options
-  const config = __webpack_require__(33);
+  const config = __webpack_require__(34);
   config.dev = !(app.env === 'production');
 
   // Instantiate nuxt.js
@@ -558,9 +564,9 @@ module.exports = require("koa-body");
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__user__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__product__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__order__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__stock__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__product__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__order__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__stock__ = __webpack_require__(32);
 
 
 
@@ -868,6 +874,12 @@ class Queue {
 
 /***/ }),
 /* 27 */
+/***/ (function(module, exports) {
+
+module.exports = {"userCheck":false}
+
+/***/ }),
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1154,18 +1166,18 @@ router.post('/stockCheck', __WEBPACK_IMPORTED_MODULE_3__user__["a" /* checkToken
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, "server/interface/product"))
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(__dirname) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_fs__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_fs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_fs__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_moment__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_moment__ = __webpack_require__(30);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_moment___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_moment__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_node_xlsx__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_node_xlsx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_node_xlsx__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_iconv_lite__ = __webpack_require__(30);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_iconv_lite__ = __webpack_require__(31);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_iconv_lite___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_iconv_lite__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__model__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__util__ = __webpack_require__(3);
@@ -1429,7 +1441,7 @@ router.post('/query', __WEBPACK_IMPORTED_MODULE_7__user__["a" /* checkToken */],
     let productCodeReg = new RegExp(productCode, 'i');
 
     let documentCount;
-    await __WEBPACK_IMPORTED_MODULE_5__model__["a" /* OrdersModel */].count({
+    await __WEBPACK_IMPORTED_MODULE_5__model__["a" /* OrdersModel */].countDocuments({
       $and: [//多条件，数组
       { orderNo: { $regex: orderNoReg } }, { title: { $regex: titleReg } }, { productCode: { $regex: productCodeReg } }]
     }, (err, count) => {
@@ -1442,7 +1454,7 @@ router.post('/query', __WEBPACK_IMPORTED_MODULE_7__user__["a" /* checkToken */],
     });
     orderModel.sort({ "createDate": -1 }).skip((pageNum - 1) * pageSize).limit(parseInt(pageSize));
     orderModel.exec(function (err, res) {
-      console.log(err);
+      console.log('err:' + err);
       if (err) {
         reject(err);
       } else {
@@ -1500,19 +1512,19 @@ router.post('/insert', __WEBPACK_IMPORTED_MODULE_7__user__["a" /* checkToken */]
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, "server/interface/order"))
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports) {
 
 module.exports = require("moment");
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports) {
 
 module.exports = require("iconv-lite");
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1672,13 +1684,13 @@ router.post('/query', async ctx => {
 /* harmony default export */ __webpack_exports__["a"] = (router);
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports) {
 
 module.exports = require("nuxt");
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports) {
 
 module.exports = {
