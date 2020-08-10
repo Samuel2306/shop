@@ -274,6 +274,11 @@ router.post('/query', checkToken, async ctx => {
   }
 
   await new Promise(async function(resolve, reject){
+    /*await new Promise((reslove, reject) => {
+      setTimeout(() => {
+        resolve()
+      },2000)
+    })*/
     let orderNoReg = new RegExp(orderNo, 'i')
     let titleReg = new RegExp(productName, 'i')
     let productCodeReg = new RegExp(productCode, 'i')

@@ -221,9 +221,9 @@ function addGlobComp(){
 
         let p = Promise.resolve(params);
         p = this.queue.reduce((origin, item) => {
-          return origin.then((res) => {  // res是上一个promise对象传过来的结果
+          return origin.then((res) => {// res是上一个promise对象传过来的结果
             return new Promise(async (resolve, reject) => {
-              item(res, resolve, reject)
+              await item(res, resolve, reject)
             })
           });
         }, p)

@@ -1,7 +1,7 @@
 <template>
   <section class="container">
     <DynamicForm :formConfig="formConfig" :value="formData" @input="formChange"/>
-    <component is="global_button" :queue="[this.h1,this.h3]" :params="{name: 'sf'}"></component>
+    <component is="global_button" :queue="[this.h1,this.h2,this.h3]" :params="{name: 'sf'}"></component>
     <DynamicToolBar />
     <DynamicTable
       ref="table"
@@ -323,67 +323,46 @@
       formChange(data){
         this.formData = data
         console.log(this.formData)
-        /*let item = {
-          "platform":"tb",
-          "orderNo":"1095896609307326460",
-          "title":"【一只陆同款】Y64天丝休闲气质侧开叉衬衫+K20杏色百搭雪纺中裤",
-          "price":119,
-          "orderNum":1,
-          "externalSysNum":"Y64",
-          "productAttrs":"颜色分类：单件衬衣;尺码：均码[（衬衣）]",
-          "packageInfo":"null",
-          "remark":"null",
-          "orderStatus":"交易关闭",
-          "productCode":"Y64",
-          "createDate":"2020-08-02 00:00:00"
-        }
-
-        axios.post("/api/v1/order/insert", {
-          params: JSON.stringify(this.formData)
-        })
-          .then((res) => {
-            console.log(res)
-          })
-          .catch((err) => {
-            console.log(err)
-          })*/
       },
       h1(res, next, abort){
-        console.log(res)
-        setTimeout(() => {
-          try {
-            console.log('h1')
-            next('h1');
-          }catch (e) {
-            console.log(e)
-            abort(e)
-          }
-        }, 1000);
+        axios.post("/api/v1/order/query", {
+          "pageNum": 1,
+          "pageSize": 10,
+          "orderNo": "1095896609307326460",
+        })
+          .then((res) => {
+            next(res);
+          })
+          .catch((err) => {
+            abort(err)
+          })
       },
       h2(res, next, abort){
-        console.log(res)
-        setTimeout(() => {
-          try {
-            console.log('h2')
-            next('h2');
-          }catch (e) {
-            abort(e)
-          }
-        }, 1000);
+        axios.post("/api/v1/order/query", {
+          "pageNum": 1,
+          "pageSize": 10,
+          "orderNo": "1095896609307326460",
+        })
+          .then((res) => {
+            next(res);
+          })
+          .catch((err) => {
+            abort(err)
+          })
       },
       h3(res, next, abort){
-        console.log(res)
-        setTimeout(() => {
-          try {
+        axios.post("/api/v1/order/query", {
+          "pageNum": 1,
+          "pageSize": 10,
+          "orderNo": "1095896609307326460",
+        })
+          .then((res) => {
             console.log('h3')
-            next('h3');
-          }catch (e) {
-            abort(e)
-          }
-        }, 1000);
-      },
-      run(){
-        this.buttonFlag = runQueue([this.h1,this.h3], {name: 'sf', age: 28})
+            next(res);
+          })
+          .catch((err) => {
+            abort(err)
+          })
       }
     },
     mounted(){

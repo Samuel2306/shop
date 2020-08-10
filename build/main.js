@@ -1436,6 +1436,11 @@ router.post('/query', __WEBPACK_IMPORTED_MODULE_7__user__["a" /* checkToken */],
   }
 
   await new Promise(async function (resolve, reject) {
+    /*await new Promise((reslove, reject) => {
+      setTimeout(() => {
+        resolve()
+      },2000)
+    })*/
     let orderNoReg = new RegExp(orderNo, 'i');
     let titleReg = new RegExp(productName, 'i');
     let productCodeReg = new RegExp(productCode, 'i');
