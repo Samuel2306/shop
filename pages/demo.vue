@@ -16,9 +16,6 @@
   import DynamicTable from '../components/DynamicTable/DynamicTable.vue'
   import DynamicForm from '../components/DynamicForm/DynamicForm.vue'
   import DynamicToolBar from '../components/DynamicToolBar/DynamicToolBar.vue'
-  import {
-    runQueue
-  } from '../utils/utils'
   let searchModel = {
     name: 'searchModel',
     post: function(params){
